@@ -36,12 +36,16 @@
 #include "globals.hh"
 #include "G4MagneticField.hh"
 #include <vector>
-#include <geodetic_converter.hh>
 #include "G4ThreeVector.hh"
 #include "globals.hh"
 #include "Randomize.hh"
 #include "G4SystemOfUnits.hh"
 #include <Settings.hh>
+#include "G4TransportationManager.hh"
+#include <GeographicLib/Geocentric.hpp>
+#include <GeographicLib/Math.hpp>
+#include "myUtils.hh"
+
 
 class EarthMagField_IGRF : public G4MagneticField {
 public:
@@ -53,14 +57,27 @@ public:
     void GetFieldValue(const double Point[3],
                        double *Bfield) const override;
 
+    G4ThreeVector GetFieldComponents(const G4ThreeVector &position_ECEF) const;
+
+    G4ThreeVector GetFieldComponents_cached(const G4ThreeVector &position_ECEF) const;
+
 private:
 
-    Settings *settings = Settings::getInstance();
+    mutable G4ThreeVector cached_FieldComponents{0, 0, 0};
+    mutable G4ThreeVector position_cached_meters{0, 0, 0};
+    const double cache_distance = 5.0; // meters
+    const double cache_distance_squared = cache_distance * cache_distance; // meters
+
+    void run_sanity_check();
+
+    GeographicLib::Geocentric *earth = nullptr;
+
+    mutable myUtils::vector3D mag_field_ecef{0, 0, 0};
 
     mutable int isv = 0;
     mutable int itype = 1;
     mutable int ier = 0;
-    mutable double date = double(settings->year) + double(settings->month) / 12.0 + double(settings->day) / 365.25;
+    mutable double date;
     mutable double alt = 0;
     mutable double Bx = 0, By = 0, Bz = 0, f = 0, lat = 0, lon = 0;
     mutable double xx, yy, zz;
@@ -68,13 +85,22 @@ private:
 
     mutable double elong = 0; // degrees
     mutable double colat = 0; // degrees
+    mutable double RR = 0;
+    mutable double RR_km = 0; // km
     mutable double alt_km = 0; // km
 
     mutable double Bfield_ecef_x = 0;
     mutable double Bfield_ecef_y = 0;
     mutable double Bfield_ecef_z = 0;
+    mutable double Bfield_ecef_x2 = 0;
+    mutable double Bfield_ecef_y2 = 0;
+    mutable double Bfield_ecef_z2 = 0;
 
-    const G4double nano_tesla_to_G4 = tesla * 1.e-9;
+    const double nano_tesla_to_G4 = tesla * 1.e-9;
+
+    mutable double rough_alt = 0;
+    const double earth_radius_m = 6371000.137;
+
 };
 
 

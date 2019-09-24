@@ -31,15 +31,19 @@
 #include <RunAction.hh>
 #include "G4Run.hh"
 
-RunAction::RunAction() : nEnteringTracks(0), totEnteringEnergy(0.) {
+RunAction::RunAction() {
+
 }
 
 RunAction::~RunAction() = default;
 
 void RunAction::BeginOfRunAction(const G4Run *) {
+
 }
 
 void RunAction::EndOfRunAction(const G4Run *) {
+
+    analysis->write_in_output_file_endOfRun();
 }
 
 void RunAction::Update(G4double) {

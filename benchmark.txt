@@ -1,0 +1,16 @@
+SHOULD BE IN RELEASE MODE, 400 loops
+GEOLIB IGRF:                  10.57
+GEOLIB WMM:                   12.18
+GEOLIB EMM:                   13628
+Fortran IGRF geodetic:        9.77
+Fortran IGRF geocentric:      9.02
+C WMM :                       11.03
+
+
+Use of cache for 1,000,000 initial photons (TEB ASIM #2 config)
+  Fortran IGRF geodetic cached: 
+      1  m = 1067 s
+      5  m =  725 s
+      10 m =  833 s
+      20 m =  629 s
+

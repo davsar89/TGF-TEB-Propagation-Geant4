@@ -14,6 +14,8 @@
  *
  */
 
+# pragma once
+
 #include "EGM9615.h"
 
 #ifndef _POSIX_C_SOURCE

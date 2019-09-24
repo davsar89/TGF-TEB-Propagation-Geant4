@@ -40,7 +40,7 @@
 /vis/modeling/trajectories/drawByCharge-0/default/setDrawStepPts true
 /vis/modeling/trajectories/drawByCharge-0/default/setStepPtsSize 2
 
-/vis/ogl/set/displayListLimit 100000
+/vis/ogl/set/displayListLimit 500000
 
 # (if too many tracks cause core dump => /tracking/storeTrajectory 0)
 #

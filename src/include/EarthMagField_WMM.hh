@@ -34,11 +34,12 @@
 #include "globals.hh"
 #include "G4MagneticField.hh"
 #include <vector>
-#include <geodetic_converter.hh>
 #include "G4ThreeVector.hh"
 #include "globals.hh"
 #include "Randomize.hh"
 #include "G4SystemOfUnits.hh"
+#include <GeographicLib/Geocentric.hpp>
+#include <GeographicLib/Math.hpp>
 
 #include <string>
 
@@ -48,6 +49,8 @@ extern "C"
 }
 
 #include "Settings.hh"
+#include <GeographicLib/Geocentric.hpp>
+#include "myUtils.hh"
 
 class EarthMagField_WMM : public G4MagneticField {
 public:
@@ -58,19 +61,19 @@ public:
     void GetFieldValue(const double Point[3],
                        double *Bfield) const override;
 
+    G4ThreeVector GetFieldComponents(const G4ThreeVector &position_ECEF) const;
+
 private:
+    mutable myUtils::vector3D mag_field_ecef{0, 0, 0};
 
-    Settings *settings = Settings::getInstance();
+    GeographicLib::Geocentric *earth = nullptr;
 
-    mutable double altitude_MagField_off_in_meters = 35000.0;
+    mutable double rough_alt = 0;
+    const double earth_radius_m = 6371000.137;
 
-    mutable int isv = 0;
-    mutable int itype = 1;
-    mutable int ier = 0;
-    mutable double date = double(settings->year) + double(settings->month) / 12.0 + double(settings->day) / 365.25;
     mutable double alt = 0;
     mutable double Bx = 0, By = 0, Bz = 0, f = 0, lat = 0, lon = 0;
-    mutable double xx, yy, zz;
+    mutable double xx = 0, yy = 0, zz = 0;
     mutable double coslon = 0, sinlon = 0, sinlat = 0, coslat = 0;
 
     mutable double elong = 0;  // degrees
@@ -83,17 +86,17 @@ private:
 
     const G4double nano_tesla_to_G4 = tesla * 1.e-9;
 
-    mutable MAGtype_MagneticModel *MagneticModels[1], *TimedMagneticModel;
-    mutable MAGtype_Ellipsoid Ellip;
-    mutable MAGtype_CoordSpherical CoordSpherical;
-    mutable MAGtype_CoordGeodetic CoordGeodetic;
-    mutable MAGtype_Date UserDate;
-    mutable MAGtype_GeoMagneticElements GeoMagneticElements, Errors;
-    mutable MAGtype_Geoid Geoid;
+    mutable MAGtype_MagneticModel *MagneticModels[1]{}, *TimedMagneticModel;
+    mutable MAGtype_Ellipsoid Ellip{};
+    mutable MAGtype_CoordSpherical CoordSpherical{};
+    mutable MAGtype_CoordGeodetic CoordGeodetic{};
+    mutable MAGtype_Date UserDate{};
+    mutable MAGtype_GeoMagneticElements GeoMagneticElements{}, Errors{};
+    mutable MAGtype_Geoid Geoid{};
 
-    mutable char ans[20], b;
+    mutable char ans[20]{}, b{};
 
-    mutable char VersionDate[12];
+    mutable char VersionDate[12]{};
     mutable int NumTerms, Flag = 1, nMax = 0;
     mutable int epochs = 1;
 

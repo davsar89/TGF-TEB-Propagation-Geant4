@@ -29,6 +29,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 #pragma once
 
+#define GEANT_VERSION 4103
+
 #include <Settings.hh>
 
 #include "EarthMagField_WMM.hh"
@@ -43,6 +45,7 @@ class G4VPhysicalVolume;
 #include "G4ClassicalRK4.hh"
 #include "G4VPVParameterisation.hh"
 #include "G4Element.hh"
+#include "G4HelixImplicitEuler.hh"
 
 extern "C" {
 #include <nrlmsise-00.h>
@@ -57,7 +60,6 @@ extern "C" {
 #include <string>
 #include "G4UserLimits.hh"
 #include "G4SDManager.hh"
-#include "SD.hh"
 
 #include "RegionInformation.hh"
 #include "G4RegionStore.hh"
@@ -105,15 +107,21 @@ extern "C" {
 #include "G4EqMagElectricField.hh"
 #include "G4ClassicalRK4.hh"
 #include "G4Mag_UsualEqRhs.hh"
+
+#if GEANT_VERSION == 4104
 #include "G4IntegrationDriver.hh"
 #include "G4VIntegrationDriver.hh"
+#endif
+
 #include "G4EqMagElectricField.hh"
 #include "G4UniformElectricField.hh"
 #include "G4DormandPrince745.hh"
 #include "G4LogicalVolumeModel.hh"
 #include "G4VPhysicalVolume.hh"
-#include <geodetic_converter.hh>
 #include <G4ExtendedMaterial.hh>
+#include "FieldSetup.hh"
+#include "G4Cache.hh"
+#include "G4AutoDelete.hh"
 
 class G4UserLimits;
 
@@ -128,23 +136,33 @@ public:
 
     G4VPhysicalVolume *Construct() override;
 
+    void ConstructSDandField() override;
+
 private:
 
-    bool CHECK_ASCENDING(const std::vector<double>& alt_list);
+    GeographicLib::Geocentric *earth = nullptr;
+
+    G4Region *RECORD_REGION = new G4Region("RECORD_REGION");
+
+    G4Cache<FieldSetup *> fEmFieldSetup;
+
+    ///
+
+    double base_radius;
+
+    ///
+
+    double find_radius_for_record_altitude(const double &center_theta, const double &center_phi, const double &rec_alt);
+
+    bool CHECK_ASCENDING(const std::vector<double> &alt_list);
 
     std::vector<G4Material *> GENERATE_AIR_MATERIALS(double min_density, double max_density, int number);
 
     void calculate_radii_list();
 
-    Settings *settings = Settings::getInstance();
-
-    std::vector<SensitiveDet *> sens_det_List;
-
     int find_atmosphere_part_material(double lat, double lon, double alt);
 
     std::vector<G4Material *> Airs;
-
-    double base_radius = settings->earthRadius - 22.0 * km;
 
     //    void ConstructAtmosMats2();
     //    void ConstructAtmosMats3();
@@ -156,8 +174,6 @@ private:
     //    int    findNearestNeighbourIndex(double,
     //                                     vector < double >);
 
-    void Construct_MagField_Managers();
-
     G4LogicalVolume *logicalWorld;
     G4VPhysicalVolume *physicalWorld;
     G4Material *vac = nullptr;
@@ -166,38 +182,34 @@ private:
     std::vector<G4LogicalVolume *> atmosLayers_LV;
     std::vector<G4VPhysicalVolume *> atmosLayers_PV;
 
-    std::vector<G4double> radius_list; // (geodetic)altitudes intervals of the layers
+    std::vector<G4Sphere *> det_layers_S;
+    std::vector<G4LogicalVolume *> det_layers_LV;
+    std::vector<G4VPhysicalVolume *> det_layers_PV;
+
+    std::vector<double> radius_list; // (geodetic)altitudes intervals of the layers
     G4int nb_altitudes = 256;
-    G4double alt_min = 0.1 * km; // (geodetic)
-    G4double alt_max_atmosphere = 180. * km; // maximum altitude where the atmosphere is not negigible (with margin)
-    G4double alt_account_Mag_Field = 35. * km; // altitude above which earth's magnetic field is takem into account
-    bool done_for_this_theta_phi=false;
+    double radius_min = 0.1 * km; //
+    double min_alt_to_build = 1.0 * km; // just inititialization value
+    const int nb_theta = 45;
+    const int nb_phi = 6;
 
-    G4double world_max_altitude = 15000. * km;
+    // because generating more than thousands of air materials uses a lot of memory
+    const int number_of_AIR_materials = 256;
 
-    // magnetic field managers
-    G4FieldManager *globalfieldMgr = nullptr;
-    G4FieldManager *Null_FieldManager = nullptr;
-    G4ChordFinder *fChordFinder = nullptr;
-    G4UniformMagField *magField_null = nullptr;
+    //
+    double world_max_altitude = 15000. * km;
 
-    G4double fMinStep = 0.010 * mm;
-    G4double minEps = 1.0e-8; //   Minimum & value for smallest steps
-    G4double maxEps = 1.0e-7; //   Maximum & value for largest steps
+    double saved_radius_test = 0; // initialization
 
-    G4double maxStep = settings->STEP_MAX_RECORD_AREA;
-    G4UserLimits *stepLimit = new G4UserLimits(maxStep);
+    double fMinStep = 0.010 * mm;
+    double minEps = 1.0e-7; //   Minimum & value for smallest steps
+    double maxEps = 1.0e-6; //   Maximum & value for largest steps
 
-    G4bool not_contains(G4double value, const std::vector<G4double> &vec);
-
-    G4MagIntegratorStepper *fStepper = nullptr;
-    G4Mag_UsualEqRhs *pMagFldEquation = nullptr;
-
-    G4MagneticField *myCachedEarthMagField = nullptr;
+    G4bool not_contains(double value, const std::vector<double> &vec);
 
     std::ofstream asciiFile;
 
-    bool hasDuplicates(const std::vector<G4double> &arr);
+    bool hasDuplicates(const std::vector<double> &arr);
 
     // Vaccum
     G4NistManager *man = G4NistManager::Instance();
@@ -206,9 +218,8 @@ private:
     G4Element *elN = new G4Element("Nitrogen", "N", 7., 14.01 * g / mole);
     G4Element *elO = new G4Element("Oxygen", "O", 8., 16.00 * g / mole);
 
-    const G4double sea_level_density = 1.304E-03 * g / cm3;
-    const G4double km_150_density = 2.190E-12 * g / cm3;
-    const int number_of_AIR_materials = 256; // because generating more than thousands of air materials uses a lot of memory
+    const double sea_level_density = 1.304E-03 * g / cm3;
+    const double km_150_density = 2.190E-12 * g / cm3;
     std::vector<double> density_grid;
 
     template<typename T>

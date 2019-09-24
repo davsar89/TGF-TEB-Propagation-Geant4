@@ -1,0 +1,24 @@
+Outputs are written in the folder ./output_ascii/
+Each output file contains a list of recorded particles with the following columns :	
+    - settings->RANDOM_SEED : the random number seed
+	- settings->SOURCE_ALT (km)
+	- settings->SOURCE_OPENING_ANGLE (deg, half cone for uniform beaming or sigma for Gaussian beaming)
+	- settings->TILT_ANGLE (deg)
+	- settings->NB_EVENT : number of TGF photons sampled when this record is made, only a small fraction of them leads to a detection
+	- ID : Geant4 creation number of particle (=1 for primary TGF photons, >1 for secondaries)
+	- PDG particle identification number (=22 for photon, =11 for e- and =-11 for e+)
+	- time of record (us), with respect to TGF photon sampling time
+	- energy of record (keV)
+	- altitude of record (km), should always be equal to the same value (e.g. 400)
+	- latitude of record (deg)
+	- longitude of record (deg)
+    - radial distance (km) of record, with respect to TGF source position
+	- ECEF x coordinate of the recorded particle
+	- ECEF y coordinate of the recorded particle
+	- ECEF z coordinate of the recorded particle
+	- mometum direction on the X direction
+	- mometum direction on the Y direction
+	- mometum direction on the Z direction
+	- a number that is 0 if the Beaming (i.e. angular distribution) is Uniform and 1 if it is Gaussian
+	- settings->SOURCE_LAT (deg)
+	- settings->SOURCE_LONG (deg)

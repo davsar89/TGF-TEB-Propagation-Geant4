@@ -125,7 +125,7 @@ G4_DECLARE_PHYSCONSTR_FACTORY(G4EmStandardPhysics_option4_dr);
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4EmStandardPhysics_option4_dr::G4EmStandardPhysics_option4_dr(G4int ver, 
+G4EmStandardPhysics_option4_dr::G4EmStandardPhysics_option4_dr(G4int ver,
 							 const G4String&)
   : G4VPhysicsConstructor("G4EmStandard_opt4"), verbose(ver)
 {
@@ -208,7 +208,7 @@ void G4EmStandardPhysics_option4_dr::ConstructProcess()
   G4MuMultipleScattering* mumsc = new G4MuMultipleScattering();
   mumsc->SetEmModel(new G4WentzelVIModel());
   G4CoulombScattering* muss = new G4CoulombScattering();
-  
+
   G4hMultipleScattering* pimsc = new G4hMultipleScattering();
   pimsc->SetEmModel(new G4WentzelVIModel());
   G4CoulombScattering* piss = new G4CoulombScattering();
@@ -216,7 +216,7 @@ void G4EmStandardPhysics_option4_dr::ConstructProcess()
   G4hMultipleScattering* kmsc = new G4hMultipleScattering();
   kmsc->SetEmModel(new G4WentzelVIModel());
   G4CoulombScattering* kss = new G4CoulombScattering();
-  
+
   G4hMultipleScattering* hmsc = new G4hMultipleScattering("ionmsc");
 
   // energy limits for e+- scattering models
@@ -258,7 +258,7 @@ void G4EmStandardPhysics_option4_dr::ConstructProcess()
 
       // Rayleigh scattering
       ph->RegisterProcess(new G4RayleighScattering(), particle);
- 
+
     } else if (particleName == "e-") {
 
       // multiple scattering
@@ -272,16 +272,16 @@ void G4EmStandardPhysics_option4_dr::ConstructProcess()
       msc->SetEmModel(msc1);
       msc->SetEmModel(msc2);
 
-      G4eCoulombScatteringModel* ssm = new G4eCoulombScatteringModel(); 
+      G4eCoulombScatteringModel* ssm = new G4eCoulombScatteringModel();
       G4CoulombScattering* ss = new G4CoulombScattering();
-      ss->SetEmModel(ssm); 
+      ss->SetEmModel(ssm);
       ss->SetMinKinEnergy(highEnergyLimit);
       ssm->SetLowEnergyLimit(highEnergyLimit);
       ssm->SetActivationLowEnergyLimit(highEnergyLimit);
 
       // ionisation
       G4eIonisation* eIoni = new G4eIonisation();
-      eIoni->SetStepFunction(settings->dr_over_R, 10*um);
+      eIoni->SetStepFunction(Settings::dr_over_R, 10*um);
       G4PenelopeIonisationModel* pen = new G4PenelopeIonisationModel();
       pen->SetHighEnergyLimit(penEnergyLimit);
       eIoni->AddEmModel(0, pen, new G4UniversalFluctuation());
@@ -316,16 +316,16 @@ void G4EmStandardPhysics_option4_dr::ConstructProcess()
       msc->SetEmModel(msc1);
       msc->SetEmModel(msc2);
 
-      G4eCoulombScatteringModel* ssm = new G4eCoulombScatteringModel(); 
+      G4eCoulombScatteringModel* ssm = new G4eCoulombScatteringModel();
       G4CoulombScattering* ss = new G4CoulombScattering();
-      ss->SetEmModel(ssm); 
+      ss->SetEmModel(ssm);
       ss->SetMinKinEnergy(highEnergyLimit);
       ssm->SetLowEnergyLimit(highEnergyLimit);
       ssm->SetActivationLowEnergyLimit(highEnergyLimit);
 
       // ionisation
       G4eIonisation* eIoni = new G4eIonisation();
-      eIoni->SetStepFunction(settings->dr_over_R, 10*um);
+      eIoni->SetStepFunction(Settings::dr_over_R, 10*um);
       G4PenelopeIonisationModel* pen = new G4PenelopeIonisationModel();
       pen->SetHighEnergyLimit(penEnergyLimit);
       eIoni->AddEmModel(0, pen, new G4UniversalFluctuation());
@@ -352,7 +352,7 @@ void G4EmStandardPhysics_option4_dr::ConstructProcess()
                particleName == "mu-"    ) {
 
       G4MuIonisation* muIoni = new G4MuIonisation();
-      muIoni->SetStepFunction(0.2, 10*um);          
+      muIoni->SetStepFunction(0.2, 10*um);
 
       ph->RegisterProcess(mumsc, particle);
       ph->RegisterProcess(muIoni, particle);
@@ -456,11 +456,11 @@ void G4EmStandardPhysics_option4_dr::ConstructProcess()
       ph->RegisterProcess(pnuc, particle);
     }
   }
-    
+
   // Nuclear stopping
   pnuc->SetMaxKinEnergy(MeV);
   inuc->SetMaxKinEnergy(MeV);
-    
+
   // Deexcitation
   G4VAtomDeexcitation* de = new G4UAtomicDeexcitation();
   G4LossTableManager::Instance()->SetAtomDeexcitation(de);

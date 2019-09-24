@@ -35,7 +35,9 @@
 
 // ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-EventAction::EventAction() : G4UserEventAction() {}
+EventAction::EventAction() : G4UserEventAction() {
+
+}
 
 // ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -44,14 +46,23 @@ EventAction::~EventAction() = default;
 // ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void EventAction::BeginOfEventAction(const G4Event *evt) {
+
+    G4TransportationManager::GetTransportationManager()->GetPropagatorInField()->SetLargestAcceptableStep(0.1 * mm);
+
     // initializations
     evtNb++;
-#ifndef NDEBUG // debug mode
+//#ifndef NDEBUG // debug mode
+//
+//    if (evtNb % printModulo == 0) G4cout << "\n---> Begin Of Event: " << evtNb << G4endl;
+//
+//#endif // ifndef NDEBUG
 
-    if (evtNb % printModulo == 0) G4cout << "\n---> Begin Of Event: " << evtNb << G4endl;
+    G4int thread_ID = G4Threading::G4GetThreadId();
 
-#endif // ifndef NDEBUG
-    settings->NB_EVENT = evtNb;
+    if (thread_ID == 0) {
+        if (evtNb == 1) G4cout << "\n Working thread 0 ---> Begin Of Event: " << evtNb << G4endl;
+        if (evtNb % printModulo == 0) G4cout << "\n Working thread 0 ---> Begin Of Event: " << evtNb << G4endl;
+    }
 }
 
 // ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

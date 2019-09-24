@@ -29,7 +29,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <DetectorConstruction.hh>
-//#include <fortran.hh>
 
 using namespace std;
 
@@ -113,12 +112,15 @@ using namespace std;
 typedef unsigned int uint;
 
 TGFDetectorConstruction::TGFDetectorConstruction() {
+
+    base_radius = Settings::earthRadius - 22.0 * km;
+
+    earth = new GeographicLib::Geocentric(GeographicLib::Constants::WGS84_a(), GeographicLib::Constants::WGS84_f());
+
     logicalWorld = nullptr;
     physicalWorld = nullptr;
 
-    globalfieldMgr = nullptr;
-
-    if (settings->OUTPUT_ALT_LAYERS_TO_FILE) {
+    if (Settings::OUTPUT_ALT_LAYERS_TO_FILE) {
         asciiFile.open("alt_dens_debug.txt", std::ios::trunc);
 
         asciiFile << "altitude (km) // density (g/cm2)" << G4endl;
@@ -126,13 +128,18 @@ TGFDetectorConstruction::TGFDetectorConstruction() {
 
 }
 
-TGFDetectorConstruction::~TGFDetectorConstruction() = default;
+TGFDetectorConstruction::~TGFDetectorConstruction() {
+    delete earth;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 G4VPhysicalVolume *TGFDetectorConstruction::Construct() {
     //    G4FieldManager *null_field = nullptr;
+
+    min_alt_to_build = (Settings::SOURCE_ALT - 3.0) * km;
+    const double min_alt_to_build_km = min_alt_to_build / km;
 
     // cleaning geometry
     G4GeometryManager::GetInstance()->OpenGeometry();
@@ -145,30 +152,20 @@ G4VPhysicalVolume *TGFDetectorConstruction::Construct() {
 
     vaccum = man->FindOrBuildMaterial("G4_Galactic");
 
-    // construct field managers (for magnetic fields)
-    if (settings->MAG_FIELD_ON) {
-        Construct_MagField_Managers();
-    }
-
     // generating the world layers of constant density
     calculate_radii_list();
 
-    G4NistManager *man = G4NistManager::Instance();
     vac = man->FindOrBuildMaterial("G4_Galactic");
 
     // World solid
     G4Sphere *solidWorld;
     solidWorld = new G4Sphere("world_S", base_radius, (base_radius + world_max_altitude),
                               0 * degree, 360 * degree, 0 * degree, 180 * degree);
-// World logical
+    // World logical
 
     logicalWorld = new G4LogicalVolume(solidWorld,  // solid
                                        vac,         // material
                                        "world_L");
-
-    if (settings->MAG_FIELD_ON) {
-        logicalWorld->SetFieldManager(globalfieldMgr, true);
-    }
 
     // Physical volume
     physicalWorld = new G4PVPlacement(nullptr, G4ThreeVector(), "world_P", // name (2nd constructor)
@@ -185,35 +182,42 @@ G4VPhysicalVolume *TGFDetectorConstruction::Construct() {
     auto *defaultRInfo = new RegionInformation();
     defaultRInfo->Set_World();
     defaultRegion->SetUserInformation(defaultRInfo);
+//    double default_lepton_step_limit_val = 1.0*meter;
+//    G4UserLimits *stepLimit_lept_default = new G4UserLimits(default_lepton_step_limit_val);
+//    defaultRegion->SetUserLimits(stepLimit_lept_default);
 
     // Make Invisible
     //  logicalWorld -> SetVisAttributes(G4VisAttributes::Invisible);
 
-    G4double innerRad = 0;
-    G4double outerRad = 0;
+    double innerRad = 0;
+    double outerRad = 0;
 
-    G4double DELTA_PHI = 10. * degree;
+    double DELTA_PHI = 360.0 * degree / double(nb_phi);
+    double DELTA_THETA = 180.0 * degree / double(nb_theta);
 
-    G4double DELTA_THETA = 10. * degree;
+    int i_SD = 0;
 
-    int nb_total_angles = int((360.0 * degree) / DELTA_PHI) * int(180.0 * degree / DELTA_THETA);
+    double center_theta = 5. * degree; // just initialization
+    double center_phi = 5. * degree; // just initialization
+
+    int nb_total_angles = int(360.0 * degree / DELTA_PHI) * int(180.0 * degree / DELTA_THETA); // for debug
 
     // atmosphere construction
 
-    for (int i_phi = 0; i_phi < int((360.0 * degree) / DELTA_PHI); ++i_phi) {
-        for (int i_theta = 0; i_theta < int(180.0 * degree / DELTA_THETA); ++i_theta) {
+    for (int i_phi = 0; i_phi < nb_phi; ++i_phi) {
+        for (int i_theta = 0; i_theta < nb_theta; ++i_theta) {
             // loop on "altitudes"
-            for (int jj = 0; jj < radius_list.size() - 1; jj++) {
-//    for (int i_phi = 1; i_phi < 2; ++i_phi) {
-//        for (int i_theta = 6; i_theta < 7; ++i_theta) {
-//            for (unsigned int jj = 200; jj < 201; jj++) {
+            for (unsigned long i_radius = 0; i_radius < radius_list.size() - 1; i_radius++) {
+                //    for (int i_phi = 1; i_phi < 2; ++i_phi) {
+                //        for (int i_theta = 6; i_theta < 7; ++i_theta) {
+                //            for (unsigned int i_radius = 200; i_radius < 201; i_radius++) {
 
                 // here "radius" is the radius of spheres in the ECEF space that should overlap the geodetic altitudes
-                innerRad = base_radius + radius_list[jj];
-                outerRad = base_radius + radius_list[jj + 1];
+                innerRad = base_radius + radius_list[i_radius];
+                outerRad = base_radius + radius_list[i_radius + 1];
 
-                double center_theta = DELTA_THETA * i_theta + DELTA_THETA / 2.0;
-                double center_phi = i_phi * DELTA_PHI + DELTA_PHI / 2.0;
+                center_theta = DELTA_THETA * i_theta + DELTA_THETA / 2.0;
+                center_phi = i_phi * DELTA_PHI + DELTA_PHI / 2.0;
                 double avg_radius = (innerRad + outerRad) / 2.;
 
                 double ecef_x = avg_radius * std::sin(center_theta) * std::cos(center_phi);
@@ -225,92 +229,162 @@ G4VPhysicalVolume *TGFDetectorConstruction::Construct() {
                 double ecef_z_in_m = ecef_z / m;
 
                 double geod_lat = 0, geod_lon = 0, geod_alt = 0;
-                geod_conv::GeodeticConverter::ecef2Geodetic(ecef_x_in_m, ecef_y_in_m, ecef_z_in_m, geod_lat,
-                                                            geod_lon, geod_alt);
+
+                earth->Reverse(ecef_x_in_m, ecef_y_in_m, ecef_z_in_m,
+                               geod_lat, geod_lon, geod_alt);
+
+//                geod_conv::GeodeticConverter::ecef2Geodetic(ecef_x_in_m, ecef_y_in_m, ecef_z_in_m, geod_lat,
+//                                                            geod_lon, geod_alt);
 
                 double geod_alt_m = geod_alt;
 
                 // test box to see if conversion of G4Sphere radius/theta/phi to Geant4 X,Y,Z coordinates (that is used as ECEF) is OK
 //                G4Box *Abox = new G4Box('test_box',100000*meter,100000*meter,100000*meter);
-//                G4LogicalVolume* G4box_logical = new G4LogicalVolume(Abox, Airs[jj], "box_test_" + std::to_string(jj), nullptr,
+//                G4LogicalVolume* G4box_logical = new G4LogicalVolume(Abox, Airs[i_radius], "box_test_" + std::to_string(i_radius), nullptr,
 //                                                    nullptr, nullptr);
-//                G4VPhysicalVolume* positioned_box = new G4PVPlacement(nullptr, G4ThreeVector(ecef_x,ecef_y,ecef_z), "box_test_PV" + std::to_string(jj),
+//                G4VPhysicalVolume* positioned_box = new G4PVPlacement(nullptr, G4ThreeVector(ecef_x,ecef_y,ecef_z), "box_test_PV" + std::to_string(i_radius),
 //                                                                      G4box_logical, physicalWorld, false, 0,
+//                false);
 //                false);
                 double geod_alt_km = geod_alt / 1000.0;
 
                 // first altitude layer
                 // check if we covered altitudes down to 0
-                if (jj == 0) {
-                    done_for_this_theta_phi = false;
+                if (i_radius == 0) {
                     double local_min_alt = geod_alt_km;
                     if (local_min_alt > 0.0) {
                         G4cout << "ERROR: first (lower) altitude for the theta/phi segment is above 0; so the atmosphere is incomplete. ABORTING.";
                         std::abort();
                     }
                 }
-                // last altitude layer
-                // check if we covered all altitudes up to the highest record altitude
-                // settings->record_altitudes must be in ascending order
-//                if (jj == radius_list.size() - 2) {
-//                    double local_alt = geod_alt_km;
-//                    if (local_alt < settings->record_altitudes[settings->record_altitudes.size() - 1]) {
-//                        G4cout << "ERROR: last (higher) altitude for the theta/phi segment is not reaching the recording altitude. ABORTING.";
-//                        std::abort();
-//                    }
-//                }
 
-                // skip some layers in the middle
-                if (geod_alt_km > 150.0) {
+                // skip some layers in the middle or way below the TGF source altitude
+                if (geod_alt_km > 150.0 || geod_alt_km < min_alt_to_build_km) {
                     continue;
                 }
 
                 atmosLayers_S.push_back(
-                        new G4Sphere("atmosLayer_S_" + std::to_string(jj), innerRad, outerRad, i_phi * DELTA_PHI, DELTA_PHI,
+                        new G4Sphere("atmosLayer_S_" + std::to_string(i_radius), innerRad, outerRad, i_phi * DELTA_PHI, DELTA_PHI,
                                      DELTA_THETA * i_theta, DELTA_THETA));
 
-                if (geod_alt_km > 0.0 && geod_alt_km < 150.0) {
+                if (geod_alt_km > min_alt_to_build_km && geod_alt_km < 150.0) {
 
                     // this function takes input altitude in meters
                     int idx_mat = find_atmosphere_part_material(geod_lat, geod_lon, geod_alt_m);
 
                     atmosLayers_LV.push_back(
-                            new G4LogicalVolume(atmosLayers_S.back(), Airs[idx_mat], "atmosphere_LV_" + std::to_string(jj), nullptr,
-                                                nullptr, nullptr));
-                }
-                    // vaccum if altitude > ALT_MAX or altitude < 0
-                else {
-                    atmosLayers_LV.push_back(
-                            new G4LogicalVolume(atmosLayers_S.back(), vac, "atmosphere_LV_" + std::to_string(jj), nullptr,
+                            new G4LogicalVolume(atmosLayers_S.back(), Airs[idx_mat], "atmosphere_LV_" + std::to_string(i_radius), nullptr,
                                                 nullptr, nullptr));
                 }
 
-                // assigning magnetic field
-                if (settings->MAG_FIELD_ON) {
-                    atmosLayers_LV.back()->SetFieldManager(globalfieldMgr, true);
-
-                    // null magnetic field if altitude < 45 km
-                    if (geod_alt_km < 35.0) {
-                        atmosLayers_LV.back()->SetFieldManager(Null_FieldManager, true);
-                    }
-                }
-
-                G4String name_PV = "atmosphere_PV_" + std::to_string(jj);
+                G4String name_PV = "atmosphere_PV_" + std::to_string(i_radius);
                 atmosLayers_PV.push_back(
                         new G4PVPlacement(nullptr, G4ThreeVector(), name_PV, atmosLayers_LV.back(), physicalWorld, false, 0, false));
 
+            } // end of radius for loop
+
+            //// ADDING layer for record
+            //// WARNING: it is not necessarily used, record based on position of steps could be preferred
+            const double radius_for_rec_alt = find_radius_for_record_altitude(center_theta, center_phi, Settings::record_altitude * km);
+
+            innerRad = base_radius + radius_for_rec_alt - Settings::STEP_MAX_RECORD_AREA * 10.0;
+            outerRad = base_radius + radius_for_rec_alt + Settings::STEP_MAX_RECORD_AREA * 20.0;
+
+            det_layers_S.push_back(
+                    new G4Sphere("det_layer_S_" + std::to_string(i_SD), innerRad, outerRad, i_phi * DELTA_PHI, DELTA_PHI,
+                                 DELTA_THETA * i_theta, DELTA_THETA));
+
+            det_layers_LV.push_back(
+                    new G4LogicalVolume(det_layers_S.back(), vac, "det_layer_LV_" + std::to_string(i_SD), nullptr,
+                                        nullptr, nullptr));
+
+            // settings region and step limiter
+            if (Settings::USE_STEP_MAX_for_record) {
+
+                det_layers_LV.back()->SetRegion(RECORD_REGION);
+                RECORD_REGION->AddRootLogicalVolume(det_layers_LV.back());
+
+                double maxStep = Settings::STEP_MAX_RECORD_AREA;
+                G4UserLimits *stepLimit = new G4UserLimits(maxStep);
+                det_layers_LV.back()->SetUserLimits(stepLimit);
             }
+
+            G4String name_PV = "det_layer_PV_" + std::to_string(i_SD);
+            det_layers_PV.push_back(
+                    new G4PVPlacement(nullptr, G4ThreeVector(), name_PV, det_layers_LV.back(), physicalWorld, false, 0, false));
+
+            ////
         }
     }
 
-//    if (id_SD == 0 || id_SD > nb_total_angles) {
-//        G4cout << "ERROR with the number of sensitive detectors : there is none of them, or too much of them. ABORTING." << G4endl;
-//        std::abort();
-//    }
+    //    if (id_SD == 0 || id_SD > nb_total_angles) {
+    //        G4cout << "ERROR with the number of sensitive detectors : there is none of them, or too much of them. ABORTING." << G4endl;
+    //        std::abort();
+    //    }
 
     G4cout << G4endl << "Geometry built successfully." << G4endl << G4endl;
 
     return physicalWorld;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+double TGFDetectorConstruction::find_radius_for_record_altitude(const double &center_theta, const double &center_phi, const double &wanted_alt) {
+
+    double geod_alt_km;
+    double wanted_alt_km;
+    double radius_test;
+
+    const double delta = 0.001 * km;
+
+    if (saved_radius_test == 0.0) {
+        radius_test = wanted_alt;
+    } else {
+        radius_test = saved_radius_test;
+    }
+
+    double relat_diff = 1000.; // initialization
+    int nb_loops = 0;
+    const double precision = 1e-5;
+
+    while (std::abs(relat_diff) > precision) {
+
+        nb_loops++;
+
+        double innerRad = base_radius + radius_test;
+
+        double ecef_x = innerRad * std::sin(center_theta) * std::cos(center_phi);
+        double ecef_y = innerRad * std::sin(center_theta) * std::sin(center_phi);
+        double ecef_z = innerRad * std::cos(center_theta);
+
+        double ecef_x_in_m = ecef_x / m;
+        double ecef_y_in_m = ecef_y / m;
+        double ecef_z_in_m = ecef_z / m;
+
+        double geod_lat = 0, geod_lon = 0, geod_alt_m = 0;
+//        geod_conv::GeodeticConverter::ecef2Geodetic(ecef_x_in_m, ecef_y_in_m, ecef_z_in_m, geod_lat,
+//                                                    geod_lon, geod_alt_m);
+        earth->Reverse(ecef_x_in_m, ecef_y_in_m, ecef_z_in_m,
+                       geod_lat, geod_lon, geod_alt_m);
+
+        geod_alt_km = geod_alt_m / 1000.0;
+        wanted_alt_km = wanted_alt / km;
+        relat_diff = (geod_alt_km - wanted_alt_km) / wanted_alt_km;
+
+        if (relat_diff > 0.0) {
+            radius_test -= delta;
+        } else if (relat_diff < 0.0) {
+            radius_test += delta;
+        } else {}
+
+        if (nb_loops > 10000) {
+            G4cout << "ERRROR in TGFDetectorConstruction::find_radius_for_record_altitude : suspiciously high number of loops. ABORTING." << G4endl;
+            std::abort();
+        }
+    }
+
+    saved_radius_test = radius_test;
+    return radius_test;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -335,17 +409,17 @@ void TGFDetectorConstruction::calculate_radii_list()
 // fills the vector altitudes
 {
 
-    if (!CHECK_ASCENDING(settings->record_altitudes)) {
-        G4cout << "ERROR : settings->record_altitudes is not sorted from low to high. Aborting." << G4endl;
-        std::abort();
-    }
+//	if (!CHECK_ASCENDING(Settings::>record_altitude)) {
+//		G4cout << "ERROR : Settings::>record_altitudes is not sorted from low to high. Aborting." << G4endl;
+//		std::abort();
+//	}
 
-    const G4double alt_max_construction = 180.0 * km;
+    const double alt_max_construction = 180.0 * km;
 
     // defining the altitude vector
     for (G4int jj = 0; jj < nb_altitudes; jj++) {
         radius_list.push_back(
-                exp(log(alt_min) + (log(alt_max_construction) - log(alt_min)) * double(jj) / double(nb_altitudes - 1)));
+                exp(log(radius_min) + (log(alt_max_construction) - log(radius_min)) * double(jj) / double(nb_altitudes - 1)));
     }
 
     if (hasDuplicates(radius_list)) { // ERROR if there is any duplicates
@@ -356,7 +430,7 @@ void TGFDetectorConstruction::calculate_radii_list()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool TGFDetectorConstruction::hasDuplicates(const std::vector<G4double> &arr) {
+bool TGFDetectorConstruction::hasDuplicates(const std::vector<double> &arr) {
     for (uint i = 0; i < arr.size(); ++i) {
         for (uint j = i + 1; j < arr.size(); ++j) {
             if (arr[i] == arr[j]) {
@@ -369,7 +443,7 @@ bool TGFDetectorConstruction::hasDuplicates(const std::vector<G4double> &arr) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-G4bool TGFDetectorConstruction::not_contains(G4double x, const std::vector<G4double> &v) {
+G4bool TGFDetectorConstruction::not_contains(double x, const std::vector<double> &v) {
     return !(std::find(v.begin(), v.end(), x) != v.end());
 }
 
@@ -379,8 +453,7 @@ G4bool TGFDetectorConstruction::not_contains(G4double x, const std::vector<G4dou
 // ref : https://ccmc.gsfc.nasa.gov/modelweb/atmos/nrlmsise00.html
 // simplified version where it is standard G4_AIR material with varying density
 // It is also possible to include all MSIS-given elements with the corresponding densities; but in practice it give very similar results and runs slower
-int
-TGFDetectorConstruction::find_atmosphere_part_material(double lat, double lon, double alt) {
+int TGFDetectorConstruction::find_atmosphere_part_material(double lat, double lon, double alt) {
 
     const double altitude_in_km = alt / 1000.0; // input alt is in meters
 
@@ -399,9 +472,9 @@ TGFDetectorConstruction::find_atmosphere_part_material(double lat, double lon, d
         flags.switches[i] = 1;
     }
 
-    input.doy = int(datetools::day_of_year(settings->year, settings->month, settings->day));
-    input.year = settings->year; /* without effect */
-    input.sec = 29000;
+    input.doy = int(datetools::day_of_year(Settings::dt_year, Settings::dt_month, Settings::dt_day));
+    input.year = Settings::dt_year; /* without effect */
+    input.sec = Settings::dt_hour * 3600.0 + Settings::dt_minute * 60.0 + Settings::dt_second;
     input.alt = altitude_in_km;
     input.g_lat = lat;
     input.g_long = lon;
@@ -423,7 +496,7 @@ TGFDetectorConstruction::find_atmosphere_part_material(double lat, double lon, d
     }
 
     // getting density and converting it to the GEANT4 system of unit
-    G4double density_air = output.d[5] * g / cm3;
+    double density_air = output.d[5] * g / cm3;
 
     // find the index of the closest density air material
 
@@ -435,10 +508,9 @@ TGFDetectorConstruction::find_atmosphere_part_material(double lat, double lon, d
 
     int minElementIndex = std::min_element(diffs.begin(), diffs.end()) - diffs.begin();
 
-//      Airs.push_back(man->BuildMaterialWithNewDensity("Air_" + std::to_string(idx_air_materials), "G4_AIR", density_air));
+    //      Airs.push_back(man->BuildMaterialWithNewDensity("Air_" + std::to_string(idx_air_materials), "G4_AIR", density_air));
 
     return minElementIndex;
-
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -449,8 +521,14 @@ std::vector<G4Material *> TGFDetectorConstruction::GENERATE_AIR_MATERIALS(double
     const double sea_level_density2 = min_density * 1.3;
     const double km_150_density2 = max_density * 0.7;
 
-//    density_grid = linspace(km_150_density2, sea_level_density2, number);
+    //    density_grid = linspace(km_150_density2, sea_level_density2, number);
     density_grid = pyLogspace(std::log10(km_150_density2), std::log10(sea_level_density2), number);
+
+    // to fix a problem seen on windows only
+    // (on windows the vector density_grid generated by pyLogspace is one element larger than on linux)
+    if (density_grid.size() == number + 1) {
+        density_grid.pop_back();
+    }
 
     std::vector<G4Material *> Airs_out;
     Airs_out.reserve(number);
@@ -460,110 +538,34 @@ std::vector<G4Material *> TGFDetectorConstruction::GENERATE_AIR_MATERIALS(double
         double density_air = density_grid[jj];
 
         G4int ncomponents = 2;
-        G4double fractionmass;
+        double fractionmass;
         Airs_out.push_back(new G4Material("Air_" + std::to_string(jj), density_air, ncomponents = 2));
         Airs_out.back()->AddElement(elN, fractionmass = 0.755 + 0.0128 / 2.0);
         Airs_out.back()->AddElement(elO, fractionmass = 0.2322 + 0.0128 / 2.0);
-
     }
 
     return Airs_out;
-
 }
 
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 
-void TGFDetectorConstruction::Construct_MagField_Managers() {
-    /////////// Magnetic field
+void TGFDetectorConstruction::ConstructSDandField() {
 
-    // myEarthMagField = new EarthMagField_alt;
+    if (!Settings::RECORD_PHOT_ONLY) {
+        if (!fEmFieldSetup.Get()) {
+            FieldSetup *emFieldSetup = new FieldSetup();
 
-    G4double distanceConst = settings->CACHED_LENGTH;
-
-    globalfieldMgr = G4TransportationManager::GetTransportationManager()->GetFieldManager();
-
-    if (distanceConst == 0.0) {
-
-#ifdef _WIN32
-        G4cout << "Windows system detected : magnetic field model must be WMM." << G4endl;
-
-        pMagFldEquation = new G4Mag_UsualEqRhs(new EarthMagField_WMM);
-        fStepper = new G4ClassicalRK4(pMagFldEquation);
-        fChordFinder = new G4ChordFinder(new EarthMagField_WMM, fMinStep, fStepper);
-        globalfieldMgr->SetChordFinder(fChordFinder);
-        globalfieldMgr->SetDetectorField(new EarthMagField_WMM);
-#elif  __unix__
-        if (settings->MAGNETIC_FIELD_MODEL == "IGRF") {
-            G4cout << "Linux system detected, and magnetic field model set to IGRF." << G4endl;
-            pMagFldEquation = new G4Mag_UsualEqRhs(new EarthMagField_IGRF);
-            fStepper = new G4ClassicalRK4(pMagFldEquation);
-            fChordFinder = new G4ChordFinder(new EarthMagField_IGRF, fMinStep, fStepper);
-            globalfieldMgr->SetChordFinder(fChordFinder);
-            globalfieldMgr->SetDetectorField(new EarthMagField_IGRF);
-        } else if (settings->MAGNETIC_FIELD_MODEL == "WMM") {
-            G4cout << "Linux system detected, and magnetic field model set to WMM." << G4endl;
-            pMagFldEquation = new G4Mag_UsualEqRhs(new EarthMagField_WMM);
-            fStepper = new G4ClassicalRK4(pMagFldEquation);
-            fChordFinder = new G4ChordFinder(new EarthMagField_WMM, fMinStep, fStepper);
-            globalfieldMgr->SetChordFinder(fChordFinder);
-            globalfieldMgr->SetDetectorField(new EarthMagField_WMM);
-        } else {
-            G4cout << "ERROR : settings->MAGNETIC_FIELD_MODEL is not a string of value 'IGRF' or 'WMM' . Aborting."
-                   << G4endl;
-            std::abort();
+            fEmFieldSetup.Put(emFieldSetup);
+            G4AutoDelete::Register(emFieldSetup); //Kernel will delete the messenger
         }
-#endif
-
-    } else {
-#ifdef _WIN32
-        myCachedEarthMagField = new G4CachedMagneticField(new EarthMagField_WMM, distanceConst);
-#elif  __unix__
-        if (settings->MAGNETIC_FIELD_MODEL == "IGRF") {
-            myCachedEarthMagField = new G4CachedMagneticField(new EarthMagField_IGRF, distanceConst);
-        } else if (settings->MAGNETIC_FIELD_MODEL == "WMM") {
-            myCachedEarthMagField = new G4CachedMagneticField(new EarthMagField_WMM, distanceConst);
-        } else {
-            G4cout << "ERROR : settings->MAGNETIC_FIELD_MODEL is not a string of value 'IGRF' or 'WMM' . Aborting."
-                   << G4endl;
-            std::abort();
-        }
-#endif
-        pMagFldEquation = new G4Mag_UsualEqRhs(myCachedEarthMagField);
-        fStepper = new G4ClassicalRK4(pMagFldEquation);
-        fChordFinder = new G4ChordFinder(myCachedEarthMagField, fMinStep, fStepper);
-        globalfieldMgr->SetChordFinder(fChordFinder);
-        globalfieldMgr->SetDetectorField(myCachedEarthMagField);
+        // Set local field manager and local field in radiator and its daughters:
+        G4bool allLocal = true;
+        logicalWorld->SetFieldManager(fEmFieldSetup.Get()->GetLocalFieldManager(),
+                                      allLocal);
+        // step limitation only for charged particles, initialization value, will be changed in the SteppingAction
+        G4TransportationManager::GetTransportationManager()->GetPropagatorInField()->SetLargestAcceptableStep(
+                0.01 * m);
     }
-
-    //    G4cout << "CACHED_LENGTH = " << settings->CachedLength() << G4endl;
-    //    !!! RQ : avoid G4NystromRK4 , bug with use of G4CachedMagneticField
-    //           avoid G4ConstRK4 and G4ImplicitEuler : bug with G4CachedMagneticField
-    //               avoid G4DormandPrinceRK78
-    //    G4DormandPrince745 is the best, from first tests
-    //    CACHED_LENGTH at 1000 m gives bad results
-    //   this was tested with G4 10.02 may be fixed with further updates.
-    //
-    globalfieldMgr->SetMinimumEpsilonStep(minEps);
-    globalfieldMgr->SetMaximumEpsilonStep(maxEps);
-    globalfieldMgr->SetDeltaOneStep(70. * cm);
-    globalfieldMgr->SetDeltaIntersection(50. * cm);
-    globalfieldMgr->GetChordFinder()->SetDeltaChord(50. * cm);
-
-    //// NUll field manager
-    ///
-    Null_FieldManager = new G4FieldManager();
-    magField_null = new G4UniformMagField(G4ThreeVector(0., 0., 0.));
-    Null_FieldManager->SetDetectorField(magField_null);
-    Null_FieldManager->CreateChordFinder(magField_null);
-    Null_FieldManager->SetMinimumEpsilonStep(minEps);
-    Null_FieldManager->SetMaximumEpsilonStep(maxEps);
-    Null_FieldManager->SetDeltaOneStep(70. * cm);
-    Null_FieldManager->SetDeltaIntersection(50. * cm);
-    Null_FieldManager->GetChordFinder()->SetDeltaChord(50. * cm);
-
-    // set maximum acceptable step everywhere, only for charged particles (i.e. affected by EM-field)
-//    G4TransportationManager::GetTransportationManager()->GetPropagatorInField()->SetLargestAcceptableStep(
-//            settings->STEP_MAX_DetConst);
-
 }
+

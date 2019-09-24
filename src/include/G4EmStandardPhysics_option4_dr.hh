@@ -63,10 +63,9 @@ public:
   virtual void ConstructProcess();
 
 private:
-  G4int  verbose;
+  G4int  verbose=0;
   G4EmParticleList partList;
 
-  Settings *settings = Settings::getInstance();
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

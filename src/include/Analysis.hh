@@ -30,20 +30,31 @@
 ////////////////////////////////////////////////////////////////////////////////
 #pragma once
 
+#include <Analysis.hh>
+#include <Settings.hh>
+#include <fstream>
+#include <iomanip>
+
+#include "G4SteppingManager.hh"
+#include "G4Track.hh"
+
 #include "G4ios.hh"
 #include "globals.hh"
 
-#include "EarthMagField_WMM.hh"
-
 #include "Settings.hh"
-#include "geodetic_converter.hh"
+#include <chrono>
+#include "G4Threading.hh"
+#include "G4AutoLock.hh"
+#include "myUtils.hh"
 
-// following a singleton pattern
+typedef unsigned int uint;
 
 class G4Track;
 
 class Analysis {
 public:
+    Analysis();
+
     ~Analysis();
 
     void save_in_output_buffer(const G4int PDG_NB, const G4double &time,
@@ -51,36 +62,29 @@ public:
                                const G4int ID, const G4double &ecef_x,
                                const G4double &ecef_y, const G4double &ecef_z,
                                const G4double &mom_x, const G4double &mom_y,
-                               const G4double &mom_z, const G4double& lat, const G4double& lon, const G4double& alt);
-
-    static Analysis *getInstance();
+                               const G4double &mom_z, const G4double &lat, const G4double &lon, const G4double &alt, const int event_nb);
 
     G4int get_NB_RECORDED() const;
-
-    Analysis(Analysis const &) = delete; // Don't Implement copy constructor
-    void
-    operator=(Analysis const &) = delete; // don't implement equality operator
 
     void write_in_output_file();
 
     void write_in_output_file_endOfRun();
 
 private:
-    Analysis();
 
-    static Analysis *instance;
+    long filename_unique_ID = 0;
 
-    Settings *settings = Settings::getInstance();
-
-    std::vector<G4String> output_lines;
-
-    G4String asciiFileName2;
-
-    uint output_buffer_size = 3;
+    const uint output_buffer_size = 2;
     //
 
     G4int NB_RECORDED = 0;
 
     G4int number_beaming = 0;
+
+    std::vector<G4String> output_lines;
+
+    G4String asciiFileName2="0";
+
+    //
 
 };

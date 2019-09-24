@@ -31,6 +31,12 @@
 
 #include "G4UserRunAction.hh"
 #include "globals.hh"
+#include <chrono>
+#include "Settings.hh"
+#include "Analysis.hh"
+#include <random>
+#include <iostream>
+
 
 class G4Run;
 
@@ -49,6 +55,5 @@ public:
 
 private:
 
-    G4int nEnteringTracks;
-    G4double totEnteringEnergy;
+    Analysis *analysis = new Analysis();
 };

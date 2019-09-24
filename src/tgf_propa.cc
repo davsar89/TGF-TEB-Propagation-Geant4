@@ -32,121 +32,105 @@
 #include "G4UImanager.hh"
 #include <DetectorConstruction.hh>
 #include <PhysicsList.hh>
+#include "globals.hh"
+
+#define G4VIS_USE 1
+#define G4UI_USE 1
 
 #ifdef G4VIS_USE
 
 #include "G4VisExecutive.hh"
 
-#endif // ifdef G4VIS_USE
+#endif
 
 #ifdef G4UI_USE
 
 #include "G4UIExecutive.hh"
 
-#endif // ifdef G4UI_USE
+#endif
 
 #include <RunAction.hh>
 
 #include <EventAction.hh>
 #include <SteppingAction.hh>
 
-#include "Bline_tracer/G4BlineTracer.hh"
-
-#include <sys/time.h>
-
 #include <chrono>
+
+#include <G4Threading.hh>
+
+#include "G4RunManager.hh"
+
+#include "ActionInitialization.hh"
+
+#include "Settings.hh"
+
+#include "myUtils.hh"
 
 using namespace std;
 
 /////////////////////////////////////////////////////////
 
-double get_wall_time()
-{
-    std::chrono::high_resolution_clock m_clock;
-    double time = std::chrono::duration_cast<std::chrono::seconds>(
-                      m_clock.now().time_since_epoch())
-                      .count();
-    return time;
-}
+int main(int argc, char **argv) {
+    double wall0 = myUtils::get_wall_time();
 
-/////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////
-
-int main(int argc, char **argv)
-{
-    double wall0 = get_wall_time();
-    Settings *settings = Settings::getInstance();
-    // random seed, different each time code is run
-    std::chrono::high_resolution_clock m_clock;
-    long start = std::chrono::duration_cast<std::chrono::nanoseconds>(
-                     m_clock.now().time_since_epoch())
-                     .count();
-    G4cout << start << " ns" << G4endl;
-    settings->RANDOM_SEED = start;
-    //
-    G4String nb_to_get_per_run = "10000";
-    settings->record_altitudes.push_back(408.0);
+    G4String number_st;
     G4String Mode = "run";
-    G4String number_st = "10000000";
 
-    // input parameters
-    //     std::cout << "Argument list" << std::endl;
-    //     for (int i = 0; i < argc; ++i) {
-    //         std::cout << argv[i] << std::endl;
-    //     }
+    if (argc > 3) {
+        number_st = argv[1];
+        Settings::SOURCE_ALT = std::stod(argv[2]);
+        Settings::SOURCE_LAT = std::stod(argv[3]);
+        Settings::SOURCE_LONG = std::stod(argv[4]);
+        Settings::SOURCE_SIGMA_TIME = std::stod(argv[5]);
+        Settings::SOURCE_OPENING_ANGLE = std::stod(argv[6]);
+        Settings::TILT_ANGLE = std::stod(argv[7]);
+        Settings::BEAMING_TYPE = argv[8];
+        Settings::record_altitude = std::stod(argv[9]); // can remove this as it is defined later
 
-    if (argc > 3)
-    {
+    } else {
+        // default values can be seen in src/include/Settings::hh
         Mode = "run";
-        nb_to_get_per_run = argv[1];
-        settings->SOURCE_ALT = std::stod(argv[2]);
-        settings->OPENING_ANGLE = std::stod(argv[3]);
-        settings->TILT_ANGLE = std::stod(argv[4]);
-        settings->BEAMING_TYPE = argv[5];
-        settings->SOURCE_SIGMA_TIME = std::stod(argv[6]);
-    }
-    else
-    {
-        // default values can be seen in src/src/Settings.cc
-        Mode = "run";
-        nb_to_get_per_run = "1000000";
+        number_st = "1000000";
     }
 
-    // choose the Random engine and give seed
-    //    G4Random::setTheEngine(new CLHEP::MTwistEngine);
-    G4Random::setTheSeed(settings->RANDOM_SEED);
-    // Construct the default run manager
+    double iss_alt = myUtils::get_ISS_altitude_at_time(int(Settings::dt_year),
+                                                       int(Settings::dt_month),
+                                                       int(Settings::dt_day),
+                                                       int(Settings::dt_hour), // UTC
+                                                       int(Settings::dt_minute),
+                                                       int(Settings::dt_second),
+                                                       int(Settings::dt_microsecond));
+    ///
+    Settings::record_altitude = std::floor(iss_alt); // km
+
+    int nb_cores=1;
+
+    //// choose the Random engine and give seed
+    G4Random::setTheEngine(new CLHEP::MixMaxRng);
+    long seeds[2];
+    seeds[0] = myUtils::generate_a_unique_ID();
+    seeds[1] = myUtils::generate_a_unique_ID();
+    G4Random::setTheSeeds(seeds, 2);
+
     auto *runManager = new G4RunManager;
-    // Construct the helper class to manage the electric field &
-    // the parameters for the propagation of particles in it.
-    // set mandatory initialization classes
-    runManager->SetUserInitialization(new TGFDetectorConstruction);
-    runManager->SetUserInitialization(
-        new TGF_PhysicsList); // for using defined physics list
-    // for using Reference physics list
-    //   G4PhysListFactory*physListFactory= new G4PhysListFactory();
-    // G4VUserPhysicsList
-    // *physicsList=physListFactory->GetReferencePhysList("LBE_LIV"); // low and
-    // high energy physics with livermore
-    //                                                               // _PEN for
-    //                                                               PENELOPE
-    //  runManager->SetUserInitialization(physicsList);
-    // std::vector<G4String> v =physListFactory->AvailablePhysLists();
-    // set mandatory user action class
-    runManager->SetUserAction(new PrimaryGeneratorAction);
-    runManager->SetUserAction(new RunAction);
-    runManager->SetUserAction(new EventAction);
-    runManager->SetUserAction(new SteppingAction);
-    //    G4BlineTracer* theBlineTool = new G4BlineTracer();
-    Analysis *analysis = Analysis::getInstance();
+
+    //
+    runManager->SetUserInitialization(new TGFDetectorConstruction());
+
+    TGF_PhysicsList *physicsList = new TGF_PhysicsList();
+    runManager->SetUserInitialization(physicsList);
+
+    //
+    runManager->SetUserInitialization(new ActionInitialization());
+
     // Initialize G4 kernel
     runManager->Initialize();
     G4cout << G4endl << "Initialization OK" << G4endl;
+
     // get the pointer to the User Interface manager
     G4UImanager *UImanager = G4UImanager::GetUIpointer();
 
-    if (Mode == "visu")
-    {
+    if (Mode == "visu") {
 #ifdef G4VIS_USE
         G4VisManager *visManager = new G4VisExecutive;
         visManager->Initialize();
@@ -162,23 +146,15 @@ int main(int argc, char **argv)
 #ifdef G4VIS_USE
         delete visManager;
 #endif // ifdef G4VIS_USE
-    }
-    else if (Mode == "run")
-    {
-        //        while(std::stoi(nb_to_get_per_run) > analysis->get_NB_RECORDED())
+    } else if (Mode == "run") {
         UImanager->ApplyCommand("/run/beamOn " + number_st);
-    }
-
-    if (settings->OUTPUT_TO_ASCII_FILE)
-    {
-        analysis->write_in_output_file_endOfRun();
     }
 
     //
     delete runManager;
     //
-    double wall1 = get_wall_time();
-    G4cout << G4endl << "WALL TIME TAKEN : " << wall1 - wall0 << " seconds "
+    double wall1 = myUtils::get_wall_time();
+    G4cout << G4endl << "WALL TIME TAKEN : " << (wall1 - wall0) / 1.e6 << " seconds "
            << G4endl;
     //
     return 0;

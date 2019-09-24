@@ -547,15 +547,15 @@ c
       kmx   = (nmx+1)*(nmx+2)/2
     2 r     = alt
       one   = colat*0.017453292
-      call sincos(one, st, ct)   ! important for performance
-c       ct    = cos(one)
-c       st    = sin(one)
+c      call sincos(one, st, ct)   ! important for performance
+       ct    = cos(one)
+       st    = sin(one)
       one   = elong*0.017453292
-      call sincos(one, ssslll, ccclll)  ! important for performance
+c      call sincos(one, ssslll, ccclll)  ! important for performance
       cl(1) = ccclll
       sl(1) = ssslll
-c      cl(1) = cos(one)
-c      sl(1) = sin(one)
+      cl(1) = cos(one)
+      sl(1) = sin(one)
       cd    = 1.0
       sd    = 0.0
       l     = 1

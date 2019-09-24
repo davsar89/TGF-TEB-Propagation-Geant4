@@ -32,9 +32,11 @@
 // ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 TGF_PhysicsList::TGF_PhysicsList() : G4VUserPhysicsList() {
-    emPhysicsList = new G4EmStandardPhysics_option4_dr();
-//    emPhysicsList = new G4EmStandardPhysics_option1();
-    this->DumpCutValuesTable();
+
+//    emPhysicsList = new G4EmStandardPhysics_option4_dr(this->settings);
+    emPhysicsList = new G4EmStandardPhysics_option1_dr(0);
+    emPhysicsList->SetVerboseLevel(0);
+//    this->DumpCutValuesTable();
 }
 
 // ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -69,93 +71,46 @@ void TGF_PhysicsList::ConstructProcess() {
     //   G4PhysicsListHelper* ph = G4PhysicsListHelper::GetPhysicsListHelper();
     //
     //   ph->RegisterProcess(radioactiveDecay, G4GenericIon::GenericIon());
+
+    /// STEP LIMITATION for photons in record area
+
+    if (Settings::USE_STEP_MAX_for_record) {
+        auto myParticleIterator = GetParticleIterator();
+        myParticleIterator->reset();
+
+        auto *stepLimiter = new G4StepLimiter();
+
+        while ((*myParticleIterator)()) {
+            G4ParticleDefinition *particle = myParticleIterator->value();
+            G4ProcessManager *pmanager = particle->GetProcessManager();
+
+            if (!particle->IsShortLived()) {
+                if ((particle->GetPDGEncoding() == 22) || (particle->GetPDGEncoding() == 11) || (particle->GetPDGEncoding() == -11)) {
+                    // All particles should have a step limiter
+                    // to make sure that the steps do not get too long.
+                    pmanager->AddDiscreteProcess(stepLimiter);
+                }
+            }
+        }
+    }
+
 }
 
 // ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 void TGF_PhysicsList::SetCuts() {
-    defaultCutValue = 1. * nm;
+    defaultCutValue = 10. * cm;
     //
     cutForGamma = defaultCutValue;
     cutForElectron = defaultCutValue;
     cutForPositron = defaultCutValue;
     //
-    //
-    //
     SetCutValue(cutForGamma, "gamma");
     SetCutValue(cutForElectron, "e-");
     SetCutValue(cutForPositron, "e+");
-    // SetCutsWithDefault();
-    //    G4EmParameters *param = G4EmParameters::Instance();
-    //   param->SetMinEnergy(20.*keV);
-    //    param->SetMaxEnergy(100.*MeV);
-    //   param->SetLowestElectronEnergy(20.*keV);
-    //    param->SetNumberOfBinsPerDecade(16);
-    //   param->SetMscRangeFactor(0.01);
-    //   param->SetFluo(true);
-    //   param->SetAuger(true);
-    //   param->SetPixe(true);
-    //   param->SetPIXEElectronCrossSectionModel("Penelope");
-    //    param->SetLateralDisplacement(true);
-    //    param->ActivateAngularGeneratorForIonisation(true);
-    G4double lowlimit = settings->MIN_ENERGY_OUTPUT;
+
+//    G4double lowlimit = Settings::MIN_ENERGY_OUTPUT;
     G4ProductionCutsTable *aPCTable = G4ProductionCutsTable::GetProductionCutsTable();
-    aPCTable->SetEnergyRange(lowlimit, 100 * CLHEP::GeV);
+    aPCTable->SetEnergyRange(10.0 * keV, 100 * CLHEP::GeV);
 
-    if (settings->USE_STEP_MAX_for_record) {
-        Add_StepMax_for_record_regions();
-    }
-
-    if (settings->USE_STEP_MAX_GLOBAL) {
-        AddStepMax_GLOBAL(settings->GLOBAL_STEP_MAX_VAL_LEPTONS, settings->GLOBAL_STEP_MAX_VAL_PHOTONS);
-    }
-}
-
-///////////////////////////////////////////////////////
-
-#include "G4StepLimiter.hh"
-#include "G4ProcessManager.hh"
-
-void TGF_PhysicsList::Add_StepMax_for_record_regions() {
-    // Step limitation seen as a process
-    G4StepLimiter *stepLimiter = new G4StepLimiter();
-    ////G4UserSpecialCuts* userCuts = new G4UserSpecialCuts();
-    auto particleIterator = GetParticleIterator();
-    particleIterator->reset();
-
-    while ((*particleIterator)()) {
-        G4ParticleDefinition *particle = particleIterator->value();
-        G4ProcessManager *pmanager = particle->GetProcessManager();
-        pmanager->AddDiscreteProcess(stepLimiter);
-        ////pmanager ->AddDiscreteProcess(userCuts);
-    }
-}
-
-// ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-#include "StepMax.hh"
-
-void TGF_PhysicsList::AddStepMax_GLOBAL(G4double stepMaxVal_elec, G4double stepMaxVal_gamma) {
-    // Step limitation seen as a process
-    StepMax *stepMaxProcess_elec = new StepMax();
-    stepMaxProcess_elec->SetMaxStep(stepMaxVal_elec);
-
-    StepMax *stepMaxProcess_gamma = new StepMax();
-    stepMaxProcess_gamma->SetMaxStep(stepMaxVal_gamma);
-
-    auto particleIterator = GetParticleIterator();
-    particleIterator->reset();
-
-    while ((*particleIterator)()) {
-        G4ParticleDefinition *particle = particleIterator->value();
-        G4ProcessManager *pmanager = particle->GetProcessManager();
-
-        if (stepMaxProcess_elec->IsApplicable(*particle)) {
-            if (particle->GetPDGEncoding() == 22) {
-                pmanager->AddDiscreteProcess(stepMaxProcess_gamma);
-            } else {
-                pmanager->AddDiscreteProcess(stepMaxProcess_elec);
-            }
-        }
-    }
 }

@@ -1,89 +1,60 @@
 #include "Settings.hh"
 
-// ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-Settings *Settings::instance = nullptr;
+namespace Settings {
 
-Settings *Settings::getInstance()
-{
-    if (instance == nullptr)
-    {
-        instance = new Settings;
-    }
+    double SOURCE_LAT = -7.0492;  // degree
+    double SOURCE_LONG = 55.9129; // degree
+    double SOURCE_ALT = 15.;    // km
+    double record_altitude = 408.0;
 
-    return instance;
-}
+    double SOURCE_OPENING_ANGLE = 30.; // degree
+    G4String BEAMING_TYPE = "Gaussian";
 
-////// Global static pointer used to ensure a single instance of the class.
-///// (singleton pattern)
-// Settings *Settings::instance = 0;
+    double TILT_ANGLE = 0.0;
 
-// void
-// Settings::diplay_settings()
-// {
-//    G4cout << G4endl;
-//    G4cout << "*************************************************************" << G4endl;
-//    G4cout << " SIMULATION SETTINGS : " << G4endl;
-//    G4cout << "    Random Number Seed : " << Rand_seed << G4endl;
-//    G4cout << "    Cached length for Integrator : " << CACHED_LENGTH << " m" << G4endl;
-//    G4cout << "    Initial altitude : " << SOURCE_ALT << " km" << G4endl;
-//    G4cout << "    Beaming : " << G4endl;
-//    G4cout << "        Type : " << BEAMING_TYPE << G4endl;
-//    G4cout << "        Angle : " << OPENING_ANGLE << " degrees; corresponds to" << G4endl;
-//    G4cout << "          - max angle if Type = uniform;" << G4endl;
-//    G4cout << "          - sigma if Type = gaussian (normal)" << G4endl;
+    double SOURCE_SIGMA_TIME = 0.; // microsecond
 
-//    G4cout << "    Source timimg (gaussian sigma) : " << SOURCE_SIGMA_TIME << " microsecond" << G4endl;
+    /// Below variables should stay CONSTANT
 
-//    G4cout << "    Output Altitudes : " << G4endl;
-//    G4cout << "        ";
+    G4bool RECORD_PHOT_ONLY = false;      // record only photons
 
-//    for (unsigned int ii = 0; ii < record_altitudes.size(); ++ii)
-//        {
-//            G4cout << record_altitudes[ii] << " km, ";
-//        }
+    // force max step only for layers where particles are recorded
+    G4bool USE_STEP_MAX_for_record = true;
+    double STEP_MAX_RECORD_AREA = 100.0 * meter;
 
-//    G4cout << G4endl;
+    bool CHECK_ELECTRON_TRACKING_IN_MAG_FIELD = true; // for leptons : check step size compared to Larmor radius
 
-//    G4cout << "*************************************************************" << G4endl;
-//    G4cout << G4endl;
-// }
+    G4bool OUTPUT_TO_ASCII_FILE = true;
 
-// G4String Settings::BeamingType() const
-// {
-//    return BEAMING_TYPE;
-// }
+    G4String MAGNETIC_FIELD_MODEL = "IGRF"; // "WMM" or "IGRF" or "GEOLIB", should be WMM on MAC
+    G4String MAGNETIC_FIELD_MODEL_FOR_GEOLIB = "IGRF"; // "WMM" or "IGRF" or "EMM"
+    // WARNING : EMM is about 1000 times slower.
 
-// void Settings::set_BeamingType(const G4String &value)
-// {
-//    BEAMING_TYPE = value;
-// }
+    double dr_over_R = 0.05; // stepping parameter for ionization, default is 0.2, that may be too high
+    double TIME_LIMIT = 0.2 * second;
+    double MIN_ENERGY_OUTPUT = 10.0 * keV;
 
-// void Settings::set_AltMax_recorded()
-// {
-//    G4double max_alt = 0.;
+    // date
+    int dt_year = 2019;
+    double dt_month = 3;
+    double dt_day = 24;
+    double dt_hour = 0;
+    double dt_minute = 31;
+    double dt_second = 53;
+    double dt_microsecond = 135444;
 
-//    for (int ii = 0; ii < nb_altitude_record; ++ii)
-//        {
-//            if (record_altitudes[ii] > max_alt)
-//                {
-//                    max_alt = record_altitudes[ii];
-//                }
-//        }
+    // Earth radius
+    double earthRadius = 6378.137 * km;
 
-//    ALT_MAX_RECORDED = max_alt;
-// }
+    G4bool OUTPUT_ALT_LAYERS_TO_FILE =
+            false; // output list of altitude and densities of layer to file (for debug)
 
-// G4bool Settings::USE_STEP_MAX() const
-// {
-//    return USE_STEP_MAX_;
-// }
+    // to record particles only inside a specific latitude and longitude window
 
-// void Settings::set_MAG_FIELD_ON(const G4bool MAG_FIELD_BOOL)
-// {
-//    MAG_FIELD_ON_ = MAG_FIELD_BOOL;
-// }
+    bool RECORD_ONLY_IN_WINDOW = true;
 
-// G4bool Settings::MAG_FIELD_ON() const
-// {
-//    return MAG_FIELD_ON_;
-// }
+    double iss_lat = 0.1575;
+    double iss_lon = 55.3015;
+
+    record_window RECORD_WIN{iss_lat - 5.0, iss_lat + 5.0, iss_lon - 5.0, iss_lon + 5.0}; // degrees
+};

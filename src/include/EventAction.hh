@@ -34,6 +34,8 @@
 #include "Settings.hh"
 #include "G4UserEventAction.hh"
 #include "globals.hh"
+#include "G4TransportationManager.hh"
+#include "G4PropagatorInField.hh"
 
 // ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -52,10 +54,8 @@ public:
 
 private:
 
-    G4int printModulo = 20000;
+    G4int printModulo = 10000;
     G4int evtNb = 0;
-
-    Settings *settings = Settings::getInstance();
 
 };
 

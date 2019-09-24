@@ -37,47 +37,56 @@
 #include "G4SteppingManager.hh"
 #include "G4Track.hh"
 
-// singleton pattern initialization
-Analysis *Analysis::instance = nullptr;
+
+#include <thread>
+#include <chrono>
 
 // constructor
 Analysis::Analysis() {
-    const G4double ALT_MAX_RECORDED = *std::max_element(
-            settings->record_altitudes.begin(), settings->record_altitudes.end());
-    //
+
+    ///
+    G4int thread_ID = G4Threading::G4GetThreadId();
+
+    const long unique_ID3 = myUtils::generate_a_unique_ID();
+    filename_unique_ID = unique_ID3;
+//    G4cout << thread_ID << " " << unique_ID3 << G4endl;
+
+    const double ALT_MAX_RECORDED = Settings::record_altitude;
+
+    ///
+
     const G4String output_filename_second_part =
-            std::to_string(settings->RANDOM_SEED) + "_" +
+            std::to_string(filename_unique_ID) + "_" +
             std::to_string(int(ALT_MAX_RECORDED)) + "_" +
-            std::to_string(int(settings->SOURCE_ALT)) + "_" +
-            std::to_string(int(settings->OPENING_ANGLE)) + "_" +
-            settings->BEAMING_TYPE + "_" +
-            std::to_string(int(settings->SOURCE_SIGMA_TIME)) + ".out";
-    //
-    asciiFileName2 = "./output_ascii/detParticles_" + output_filename_second_part;
-    std::ofstream asciiFile00(asciiFileName2,
-                              std::ios::trunc); // to clean the output file
-    asciiFile00.close();
-    //
-    output_lines.clear();
+            std::to_string(int(Settings::SOURCE_ALT)) + "_" +
+            std::to_string(int(Settings::SOURCE_OPENING_ANGLE)) + "_" +
+            Settings::BEAMING_TYPE + "_" +
+            std::to_string(int(Settings::SOURCE_SIGMA_TIME)) + ".out";
     //
 
-    if ((settings->BEAMING_TYPE == "Uniform") ||
-        (settings->BEAMING_TYPE == "uniform")) {
+    //
+
+    if ((Settings::BEAMING_TYPE == "Uniform") ||
+        (Settings::BEAMING_TYPE == "uniform")) {
         number_beaming = 0;
-    } else if ((settings->BEAMING_TYPE == "Gaussian") ||
-               (settings->BEAMING_TYPE == "gaussian") ||
-               (settings->BEAMING_TYPE == "normal") ||
-               (settings->BEAMING_TYPE == "Normal")) {
+    } else if ((Settings::BEAMING_TYPE == "Gaussian") ||
+               (Settings::BEAMING_TYPE == "gaussian") ||
+               (Settings::BEAMING_TYPE == "normal") ||
+               (Settings::BEAMING_TYPE == "Normal")) {
         number_beaming = 1;
     }
 
-    //
-    if (settings->RECORD_ELEC_POSI_ONLY) { // avoid having a too big buffer size
-        // if record is only for leptons
-        if (output_buffer_size > 100) {
-            output_buffer_size = 100;
-        }
-    }
+    ///
+
+    output_lines.clear();
+
+
+        asciiFileName2 = "./output_ascii/detParticles_" + output_filename_second_part;
+        std::ofstream asciiFile00(asciiFileName2,
+                                  std::ios::trunc); // to clean the output file
+        asciiFile00.close();
+
+    G4cout << " Unique ID of Thread " << thread_ID << " set to: " <<  unique_ID3 << G4endl;
 }
 
 // ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -88,30 +97,26 @@ G4int Analysis::get_NB_RECORDED() const { return NB_RECORDED; }
 
 Analysis::~Analysis() = default;
 
-Analysis *Analysis::getInstance() {
-    if (instance == nullptr) {
-        instance = new Analysis;
-    }
-
-    return instance;
-}
-
 // ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 void Analysis::save_in_output_buffer(
         const G4int PDG_NB, const G4double &time, const G4double &energy,
         const G4double &dist_rad, const G4int ID, const G4double &ecef_x,
         const G4double &ecef_y, const G4double &ecef_z, const G4double &mom_x,
-        const G4double &mom_y, const G4double &mom_z, const G4double& lat, const G4double& lon, const G4double& alt) {
+        const G4double &mom_y, const G4double &mom_z, const G4double &lat, const G4double &lon, const G4double &alt, const int event_nb) {
 
     //
     double alt2 = alt / 1000.0; // m to km
 
     bool record_or_not = false;
 
-    if (settings->RECORD_ONLY_IN_WINDOW) {
-        const bool is_inside_record_window = (lat > settings->RECORD_WIN.min_lat && lat < settings->RECORD_WIN.max_lat)
-                                             && (lon > settings->RECORD_WIN.min_lon && lon < settings->RECORD_WIN.max_lon);
+    if (Settings::RECORD_PHOT_ONLY && (PDG_NB == 11 || PDG_NB == -11)) {
+        return;
+    }
+
+    if (Settings::RECORD_ONLY_IN_WINDOW) {
+        const bool is_inside_record_window = (lat > Settings::RECORD_WIN.min_lat && lat < Settings::RECORD_WIN.max_lat)
+                                             && (lon > Settings::RECORD_WIN.min_lon && lon < Settings::RECORD_WIN.max_lon);
 
         if (is_inside_record_window) record_or_not = true;
     } else {
@@ -121,22 +126,22 @@ void Analysis::save_in_output_buffer(
     if (record_or_not) {
 
         // ASCII OUTPUT
-        if (settings->OUTPUT_TO_ASCII_FILE) {
+        if (Settings::OUTPUT_TO_ASCII_FILE) {
             std::stringstream buffer;
             buffer << std::scientific
-                   << std::setprecision(7); // scientific notation with
+                   << std::setprecision(5); // scientific notation with
             // 5 significant digits
             //   asciiFile << name;
             //   asciiFile << ' ';
-            buffer << settings->RANDOM_SEED;
+            buffer << filename_unique_ID;
             buffer << ' ';
-            buffer << settings->SOURCE_ALT;
+            buffer << Settings::SOURCE_ALT;
             buffer << ' ';
-            buffer << settings->OPENING_ANGLE;
+            buffer << Settings::SOURCE_OPENING_ANGLE;
             buffer << ' ';
-            buffer << settings->TILT_ANGLE;
+            buffer << Settings::TILT_ANGLE;
             buffer << ' ';
-            buffer << settings->NB_EVENT; // 5
+            buffer << event_nb; // 5
             buffer << ' ';
             buffer << ID;
             buffer << ' ';
@@ -168,9 +173,9 @@ void Analysis::save_in_output_buffer(
             buffer << ' ';
             buffer << number_beaming; // 20 // number_beaming == 0 for uniform and 1 for // gaussian
             buffer << ' ';
-            buffer << settings->SOURCE_LAT;
+            buffer << Settings::SOURCE_LAT;
             buffer << ' ';
-            buffer << settings->SOURCE_LONG;
+            buffer << Settings::SOURCE_LONG;
             buffer << ' ';
             buffer << G4endl;
             //
@@ -180,6 +185,7 @@ void Analysis::save_in_output_buffer(
             output_lines.push_back(buffer.str());
             //
             write_in_output_file();
+
         }
     }
 }
@@ -195,7 +201,7 @@ void Analysis::write_in_output_file() {
     asciiFile2.open(asciiFileName2, std::ios::app);
 
     if (asciiFile2.is_open()) {
-        for (G4String &line : output_lines) {
+        for (const G4String &line : output_lines) {
             asciiFile2 << line;
         }
 

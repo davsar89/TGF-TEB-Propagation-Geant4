@@ -37,7 +37,7 @@
 #include "Settings.hh"
 #include <vector>
 
-#include "geodetic_converter.hh"
+#include <GeographicLib/Geocentric.hpp>
 
 class G4ParticleGun;
 
@@ -50,9 +50,7 @@ public:
 
     double BrokenPL(double &p1, double &p2, double &ec, double &x);
 
-    explicit PrimaryGeneratorAction(const G4String &particleName = "gamma", G4double energy = 10. * keV,
-                                    G4ThreeVector position = G4ThreeVector(6398.137 * km, 0, 0),
-                                    G4ThreeVector momentumDirection = G4ThreeVector(1, 0, 0));
+    explicit PrimaryGeneratorAction();
 
     ~PrimaryGeneratorAction();
 
@@ -61,9 +59,9 @@ public:
 
 private:
 
-    Settings *settings = Settings::getInstance();
-
     // data members
     G4ParticleGun *fParticleGun; // pointer a to G4 service class
+    G4int nofParticles = 1;
 
+    GeographicLib::Geocentric* earth = nullptr;
 };
