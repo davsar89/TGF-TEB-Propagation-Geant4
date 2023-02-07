@@ -1,0 +1,39 @@
+---
+#        number_st = argv[1];
+#        Settings::SOURCE_ALT = std::stod(argv[2]);
+#        Settings::SOURCE_LAT = std::stod(argv[3]);
+#        Settings::SOURCE_LONG = std::stod(argv[4]);
+#        Settings::SOURCE_SIGMA_TIME = std::stod(argv[5]);
+#        Settings::SOURCE_OPENING_ANGLE = std::stod(argv[6]);
+#        Settings::TILT_ANGLE = std::stod(argv[7]);
+#        Settings::BEAMING_TYPE = argv[8];
+#        Settings::record_altitude = std::stod(argv[9]);
+version: '3'
+services:
+  GEANT4:
+    image: davidsarria/geant4_10_7_3:jammy
+    build:
+      context: .
+      dockerfile: "./Dockerfile.technical"
+    restart: 'no'
+    container_name: GEANT4
+    volumes:
+      - "./interface:/interface"
+      - "./output:/TGF-ATMOS-ABSORPTION/build/output_ascii"
+    # Default command used when running `docker-compose up`
+    command: >
+      bash -c "
+      source /geant4/geant4_install_10.07.p03/bin/geant4.sh
+      && pwd
+      && ls
+      && echo ' '
+      && ls /TGF-TEB-Propagation-Geant4/
+      && mkdir -p /TGF-TEB-Propagation-Geant4/build/output_ascii || true
+      && cd /TGF-TEB-Propagation-Geant4/build
+      && cmake ../
+      && make -j4
+      && ls
+      && ./TGF_Propa 10000000 15 20 -130 0 10 0 Gaussian 408
+      "
+      
+

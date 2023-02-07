@@ -1,0 +1,6 @@
+FROM davidsarria/geant4_10_7_3:jammy
+
+RUN apt-get update -y
+RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get upgrade -y
+RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install gfortran g++ gcc
+RUN git clone https://github.com/davsar89/TGF-TEB-Propagation-Geant4.git

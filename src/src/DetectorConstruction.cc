@@ -233,19 +233,8 @@ G4VPhysicalVolume *TGFDetectorConstruction::Construct() {
                 earth->Reverse(ecef_x_in_m, ecef_y_in_m, ecef_z_in_m,
                                geod_lat, geod_lon, geod_alt);
 
-//                geod_conv::GeodeticConverter::ecef2Geodetic(ecef_x_in_m, ecef_y_in_m, ecef_z_in_m, geod_lat,
-//                                                            geod_lon, geod_alt);
-
                 double geod_alt_m = geod_alt;
 
-                // test box to see if conversion of G4Sphere radius/theta/phi to Geant4 X,Y,Z coordinates (that is used as ECEF) is OK
-//                G4Box *Abox = new G4Box('test_box',100000*meter,100000*meter,100000*meter);
-//                G4LogicalVolume* G4box_logical = new G4LogicalVolume(Abox, Airs[i_radius], "box_test_" + std::to_string(i_radius), nullptr,
-//                                                    nullptr, nullptr);
-//                G4VPhysicalVolume* positioned_box = new G4PVPlacement(nullptr, G4ThreeVector(ecef_x,ecef_y,ecef_z), "box_test_PV" + std::to_string(i_radius),
-//                                                                      G4box_logical, physicalWorld, false, 0,
-//                false);
-//                false);
                 double geod_alt_km = geod_alt / 1000.0;
 
                 // first altitude layer
@@ -312,15 +301,8 @@ G4VPhysicalVolume *TGFDetectorConstruction::Construct() {
             G4String name_PV = "det_layer_PV_" + std::to_string(i_SD);
             det_layers_PV.push_back(
                     new G4PVPlacement(nullptr, G4ThreeVector(), name_PV, det_layers_LV.back(), physicalWorld, false, 0, false));
-
-            ////
         }
     }
-
-    //    if (id_SD == 0 || id_SD > nb_total_angles) {
-    //        G4cout << "ERROR with the number of sensitive detectors : there is none of them, or too much of them. ABORTING." << G4endl;
-    //        std::abort();
-    //    }
 
     G4cout << G4endl << "Geometry built successfully." << G4endl << G4endl;
 
@@ -429,7 +411,6 @@ void TGFDetectorConstruction::calculate_radii_list()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
 bool TGFDetectorConstruction::hasDuplicates(const std::vector<double> &arr) {
     for (uint i = 0; i < arr.size(); ++i) {
         for (uint j = i + 1; j < arr.size(); ++j) {
@@ -448,7 +429,6 @@ G4bool TGFDetectorConstruction::not_contains(double x, const std::vector<double>
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
 // Caltulating materials of the atmopsheric layers, based on the MSIS C++ model integrated to this code
 // ref : https://ccmc.gsfc.nasa.gov/modelweb/atmos/nrlmsise00.html
 // simplified version where it is standard G4_AIR material with varying density
@@ -516,7 +496,6 @@ int TGFDetectorConstruction::find_atmosphere_part_material(double lat, double lo
 ///////////////////////////////////////////////////////////////////////
 
 std::vector<G4Material *> TGFDetectorConstruction::GENERATE_AIR_MATERIALS(double min_density, double max_density, int number) {
-
 
     const double sea_level_density2 = min_density * 1.3;
     const double km_150_density2 = max_density * 0.7;
