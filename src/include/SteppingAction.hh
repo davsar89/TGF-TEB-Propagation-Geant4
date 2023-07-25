@@ -101,7 +101,7 @@ private:
 
     G4ThreeVector previous_pos{0, 0, 0};
 
-    Analysis *analysis = nullptr;
+    Analysis *analysis = new Analysis();
 
     double sol_SI = 299792458.0;
 
