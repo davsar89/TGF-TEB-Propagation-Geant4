@@ -72,8 +72,6 @@ public:
 
 private:
 
-    long filename_unique_ID = 0;
-
     const uint output_buffer_size = 2;
     //
 
