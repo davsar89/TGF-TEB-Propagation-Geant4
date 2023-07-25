@@ -112,6 +112,8 @@ int main(int argc, char **argv) {
     seeds[1] = myUtils::generate_a_unique_ID();
     G4Random::setTheSeeds(seeds, 2);
 
+    Settings::RAND_SEED = seeds[0];
+
     auto *runManager = new G4RunManager;
 
     //
