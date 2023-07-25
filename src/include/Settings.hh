@@ -40,6 +40,8 @@
 
 // ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 namespace Settings {
+    extern long RAND_SEED;
+
     extern double SOURCE_LAT ;  // degree
     extern double SOURCE_LONG ; // degree
     extern double SOURCE_ALT ;    // km
