@@ -11,7 +11,7 @@
 version: '3'
 services:
   GEANT4:
-    image: davidsarria/geant4_10_7_3:jammy
+    image: ubuntu:jammy
     build:
       context: .
       dockerfile: "./Dockerfile.technical"
