@@ -39,9 +39,6 @@ SteppingAction::SteppingAction() {
 
     earth = new GeographicLib::Geocentric(GeographicLib::Constants::WGS84_a(), GeographicLib::Constants::WGS84_f());
 
-
-    this->analysis = new Analysis(); // thead local, as all the inside this derived G4UserSteppingAction class
-
     //    asciiFileName = "./extra_outputs/created_electrons";
     //    std::ofstream asciiFile00(asciiFileName, std::ios::trunc); // to clean the output file
     //    asciiFile00.close();
