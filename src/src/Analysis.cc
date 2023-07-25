@@ -47,8 +47,8 @@ Analysis::Analysis() {
     ///
     G4int thread_ID = G4Threading::G4GetThreadId();
 
-    const long unique_ID3 = myUtils::generate_a_unique_ID();
-    filename_unique_ID = unique_ID3;
+    //const long unique_ID3 = myUtils::generate_a_unique_ID();
+    //filename_unique_ID = unique_ID3;
 //    G4cout << thread_ID << " " << unique_ID3 << G4endl;
 
     const double ALT_MAX_RECORDED = Settings::record_altitude;
@@ -56,7 +56,7 @@ Analysis::Analysis() {
     ///
 
     const G4String output_filename_second_part =
-            std::to_string(filename_unique_ID) + "_" +
+            std::to_string(Settings::RAND_SEED) + "_" +
             std::to_string(int(ALT_MAX_RECORDED)) + "_" +
             std::to_string(int(Settings::SOURCE_ALT)) + "_" +
             std::to_string(int(Settings::SOURCE_OPENING_ANGLE)) + "_" +
@@ -133,7 +133,7 @@ void Analysis::save_in_output_buffer(
             // 5 significant digits
             //   asciiFile << name;
             //   asciiFile << ' ';
-            buffer << filename_unique_ID;
+            buffer << Settings::RAND_SEED;
             buffer << ' ';
             buffer << Settings::SOURCE_ALT;
             buffer << ' ';
