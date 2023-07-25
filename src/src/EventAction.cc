@@ -59,10 +59,10 @@ void EventAction::BeginOfEventAction(const G4Event *evt) {
 
     G4int thread_ID = G4Threading::G4GetThreadId();
 
-    if (thread_ID == 0) {
-        if (evtNb == 1) G4cout << "\n Working thread 0 ---> Begin Of Event: " << evtNb << G4endl;
-        if (evtNb % printModulo == 0) G4cout << "\n Working thread 0 ---> Begin Of Event: " << evtNb << G4endl;
-    }
+    //if (thread_ID == 0) {
+        if (evtNb == 1) G4cout << "\n---> Begin Of Event: " << evtNb << G4endl;
+        if (evtNb % printModulo == 0) G4cout << "\n---> Begin Of Event: " << evtNb << G4endl;
+    //}
 }
 
 // ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
