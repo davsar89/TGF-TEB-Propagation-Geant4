@@ -45,11 +45,6 @@
 Analysis::Analysis() {
 
     ///
-    G4int thread_ID = G4Threading::G4GetThreadId();
-
-    //const long unique_ID3 = myUtils::generate_a_unique_ID();
-    //filename_unique_ID = unique_ID3;
-//    G4cout << thread_ID << " " << unique_ID3 << G4endl;
 
     const double ALT_MAX_RECORDED = Settings::record_altitude;
 
@@ -85,8 +80,6 @@ Analysis::Analysis() {
         std::ofstream asciiFile00(asciiFileName2,
                                   std::ios::trunc); // to clean the output file
         asciiFile00.close();
-
-    G4cout << " Unique ID of Thread " << thread_ID << " set to: " <<  unique_ID3 << G4endl;
 }
 
 // ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
