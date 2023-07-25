@@ -19,7 +19,7 @@ services:
     container_name: GEANT4
     volumes:
       - "./interface:/interface"
-      - "./output:/TGF-ATMOS-ABSORPTION/build/output_ascii"
+      - "./output:/TGF-TEB-Propagation-Geant4/build/output_ascii"
     # Default command used when running `docker-compose up`
     command: >
       bash -c "
@@ -36,4 +36,3 @@ services:
       && ./TGF_Propa 10000000 15 20 -130 0 10 0 Gaussian 408
       "
       
-
