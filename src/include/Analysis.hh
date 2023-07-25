@@ -1,7 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 
-// /* GEANT4 code for propagation of gamma-rays, electron and positrons in
-// Earth's atmosphere */
+// /* GEANT4 code for propagation of gamma-rays, electron and positrons in Earth's atmosphere */
 //
 // //
 // // ********************************************************************
@@ -28,63 +27,142 @@
 // // * acceptance of all terms of the Geant4 Software license.          *
 // // ********************************************************************
 ////////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
-#include <Analysis.hh>
 #include <Settings.hh>
-#include <fstream>
-#include <iomanip>
+#include <vector>
 
-#include "G4SteppingManager.hh"
+#include "Analysis.hh"
+#include "G4UserSteppingAction.hh"
 #include "G4Track.hh"
-
-#include "G4ios.hh"
-#include "globals.hh"
-
+#include "G4VSensitiveDetector.hh"
+#include <fstream>
 #include "Settings.hh"
-#include <chrono>
-#include "G4Threading.hh"
-#include "G4AutoLock.hh"
-#include "myUtils.hh"
+#include <CLHEP/Units/SystemOfUnits.h>
+#include "G4SystemOfUnits.hh"
+#include "G4PhysicalConstants.hh"
+#include "G4UnitsTable.hh"
 
-typedef unsigned int uint;
+#include "EarthMagField_WMM.hh"
 
-class G4Track;
+#if defined(__linux__) && defined(__GNUG__)
 
-class Analysis {
+#include "EarthMagField_IGRF.hh"
+
+#endif
+
+#include <RunAction.hh>
+#include "G4Track.hh"
+#include "G4RunManager.hh"
+#include "G4TransportationManager.hh"
+#include "G4PropagatorInField.hh"
+#include "myG4FieldManager.hh"
+#include <GeographicLib/Geocentric.hpp>
+#include <GeographicLib/Constants.hpp>
+
+class G4Step;
+
+struct record_coords {
+    G4ThreeVector position;
+    G4double time;
+};
+
+class SteppingAction : public G4UserSteppingAction {
 public:
-    Analysis();
 
-    ~Analysis();
+    explicit SteppingAction();
 
-    void save_in_output_buffer(const G4int PDG_NB, const G4double &time,
-                               const G4double &energy, const G4double &dist_rad,
-                               const G4int ID, const G4double &ecef_x,
-                               const G4double &ecef_y, const G4double &ecef_z,
-                               const G4double &mom_x, const G4double &mom_y,
-                               const G4double &mom_z, const G4double &lat, const G4double &lon, const G4double &alt, const int event_nb);
+    ~SteppingAction() override;
 
-    G4int get_NB_RECORDED() const;
-
-    void write_in_output_file();
-
-    void write_in_output_file_endOfRun();
+    void UserSteppingAction(const G4Step *aStep) override;
 
 private:
 
-    long filename_unique_ID = 0;
+    GeographicLib::Geocentric *earth = nullptr;
 
-    const uint output_buffer_size = 2;
-    //
+    myG4FieldManager *myG4FieldMan = nullptr;
 
-    G4int NB_RECORDED = 0;
+    const double e_c = 1.60217662e-19;
+    const double sol = 299792458.0;
+    const double m_e = 9.10938356e-31;
+    const double ere = 510.9989500; // in keV
+    const double factor = 5.685630e-12; // m_e/e_c
 
-    G4int number_beaming = 0;
+    double mag_tmp;
+    double velocity_mag;
+    double Kenergy;
+    double gamma;
 
-    std::vector<G4String> output_lines;
+    G4ThreeVector momentum_dir, local_mag_field, velocity_vector, mag_field_dir;
+    G4ThreeVector v_par, v_perp, field_components;
 
-    G4String asciiFileName2="0";
+    int previous_ID = -87;
 
-    //
+    G4ThreeVector previous_pos{0, 0, 0};
 
+    Analysis *analysis = new Analysis();
+
+    double sol_SI = 299792458.0;
+
+    struct min_max_altitudes {
+        double min_val;
+        double max_val;
+    };
+
+    min_max_altitudes min_max_alt{0.0, 0.0};
+
+    void record_particles(const G4Step *aStep, const int PDG);
+
+    double project_to_record_alt(
+            const G4int type_number, const double &kinE,
+            double &ecef_x, double &ecef_y, double &ecef_z,
+            const double &lat_in, const double &lon_in, const double &alt_in);
+
+    double ALT_RECORD_in_meter = Settings::record_altitude * 1000.0;
+
+    const G4int PDG_positron = -11;
+    const G4int PDG_electron = 11;
+    const G4int PDG_photon = 22;
+
+    const G4double earth_radius = 6371.137 * km;
+    const G4double photon_max_altitude = 800.0 * km;
+
+    G4double Get_dist_rad(const G4double &lat, const G4double &lon,
+                          const G4double &alt_record);
+
+    const static int nb = 512;
+    std::vector<double> grid_latitude;
+    std::vector<double> grid_longitude;
+
+    min_max_altitudes find_min_max_rough_altitude();
+
+    double find_rough_altitude_for_real_altitude(const double &lat, const double &lon, const double &target_alt);
+
+    /////////////////////
+
+    template<typename T>
+    std::vector<double> linspace(T start_in, T end_in, int num_in) {
+
+        std::vector<double> linspaced;
+
+        double start = static_cast<double>(start_in);
+        double end = static_cast<double>(end_in);
+        double num = static_cast<double>(num_in);
+
+        if (num == 0) { return linspaced; }
+        if (num == 1) {
+            linspaced.push_back(start);
+            return linspaced;
+        }
+
+        double delta = (end - start) / (num - 1);
+
+        for (int i = 0; i < num - 1; ++i) {
+            linspaced.push_back(start + delta * i);
+        }
+        linspaced.push_back(end); // I want to ensure that start and end
+        // are exactly the same as the input
+        return linspaced;
+    }
 };
