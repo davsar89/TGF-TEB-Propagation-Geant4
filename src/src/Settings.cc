@@ -51,7 +51,7 @@ namespace Settings {
 
     // to record particles only inside a specific latitude and longitude window
 
-    bool RECORD_ONLY_IN_WINDOW = true;
+    bool RECORD_ONLY_IN_WINDOW = false;
 
     double iss_lat = 0.1575;
     double iss_lon = 55.3015;
