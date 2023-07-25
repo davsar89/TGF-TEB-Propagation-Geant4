@@ -93,15 +93,15 @@ int main(int argc, char **argv) {
         number_st = "1000000";
     }
 
-    double iss_alt = myUtils::get_ISS_altitude_at_time(int(Settings::dt_year),
-                                                       int(Settings::dt_month),
-                                                       int(Settings::dt_day),
-                                                       int(Settings::dt_hour), // UTC
-                                                       int(Settings::dt_minute),
-                                                       int(Settings::dt_second),
-                                                       int(Settings::dt_microsecond));
+    //double iss_alt = myUtils::get_ISS_altitude_at_time(int(Settings::dt_year),
+                                                     //  int(Settings::dt_month),
+                                                    //   int(Settings::dt_day),
+                                                   //    int(Settings::dt_hour), // UTC
+                                                   //    int(Settings::dt_minute),
+                                                   //    int(Settings::dt_second),
+                                                   //    int(Settings::dt_microsecond));
     ///
-    Settings::record_altitude = std::floor(iss_alt); // km
+    //Settings::record_altitude = std::floor(iss_alt); // km
 
     int nb_cores=1;
 
