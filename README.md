@@ -49,7 +49,7 @@ Most of settings can be adjusted in `src/Settings.cc`. In particular:
 - `Settings::record_altitude` = record altitude (in km) of the TGF (and secondary electron and positrons), default is 408 km.
 
 ## Program output:
-- Recorded particles are outputed as a list (one by one, line by line) in files located in the `build/output_ascii/`. See `build/README_output.txt` to find which quantity is in which column. The same electron/positron can be recorded several time since it may cross several times the limit altitude (the same particle will have the same random seed and the same ID).
+- Recorded particles are outputed as a list (one by one, line by line) in files located in the `build/output_ascii/`. See `build/README_output.txt` to find which quantity is in which column. The same electron/positron can be recorded several time since it may cross several times the limit altitude (it is the same particle if it has the same random seed and the same ID).
 
 ## Additional information:
 - By default, the code uses the `G4EmStandardPhysics_option1` physics list. This can be changed inside the source file `src/src/PhysicsList.cc`.
