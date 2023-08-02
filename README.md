@@ -17,7 +17,7 @@ contact : <david (dot) sarria (at) uib (dot) no>
 - Requires [Geant4](https://geant4.web.cern.ch/) compiled and [installed](http://geant4-userdoc.web.cern.ch/geant4-userdoc/UsersGuides/InstallationGuide/html/index.html) properly. Recommended to use geant4-10-06-patch-03 (2020-11-06). Minor changes in the source code may be required for other versions.
 ### Linux
 - Geant4 needs to be compiled, installed and set-up (environement) properly. Easy installation scripts of Geant4 for Linux are provided [here](https://github.com/DavidSarria89/GEANT4-easy-install-scripts)
-- Once Geant4 is installed and set-up properly, open a terminal in the `build/` folder and run `cmake ../src/` (to generate the `makefile` using CMake) and then `make` to compile. It will make the executable file `build/tgf_propa`. 
+- Once Geant4 is installed and set-up properly, open a terminal in the `build/` folder and run `cmake ../` (to generate the `makefile` using CMake) and then `make` to compile. It will make the executable file `build/tgf_propa`. 
 
 ## Simulation Settings:
 Most of settings can be adjusted in `src/Settings.cc`. In particular:
