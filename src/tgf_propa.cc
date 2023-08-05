@@ -85,23 +85,13 @@ int main(int argc, char **argv) {
         Settings::SOURCE_OPENING_ANGLE = std::stod(argv[6]);
         Settings::TILT_ANGLE = std::stod(argv[7]);
         Settings::BEAMING_TYPE = argv[8];
-        Settings::record_altitude = std::stod(argv[9]); // can remove this as it is defined later
+        Settings::record_altitude = std::stod(argv[9]);
 
     } else {
         // default values can be seen in src/include/Settings::hh
         Mode = "run";
         number_st = "1000000";
     }
-
-    //double iss_alt = myUtils::get_ISS_altitude_at_time(int(Settings::dt_year),
-                                                     //  int(Settings::dt_month),
-                                                    //   int(Settings::dt_day),
-                                                   //    int(Settings::dt_hour), // UTC
-                                                   //    int(Settings::dt_minute),
-                                                   //    int(Settings::dt_second),
-                                                   //    int(Settings::dt_microsecond));
-    ///
-    //Settings::record_altitude = std::floor(iss_alt); // km
 
     int nb_cores=1;
 
