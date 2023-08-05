@@ -48,7 +48,7 @@ command_number = len(commands)
 
 print('Number of commands required ' + str(command_number))
 
-pool = Pool(nb_thread)  # to be always set to 1 for this MPI case
+pool = Pool(nb_thread)
 for i, returncode in enumerate(pool.imap(partial(call, shell=True), commands)):
     if returncode != 0:
         print("%d command failed: %d" % (i, returncode))
