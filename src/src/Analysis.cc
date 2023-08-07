@@ -106,6 +106,10 @@ void Analysis::save_in_output_buffer(
     if (Settings::RECORD_PHOT_ONLY && (PDG_NB == 11 || PDG_NB == -11)) {
         return;
     }
+    
+    if (Settings::RECORD_ELEC_POSI_ONLY && PDG_NB == 22) {
+        return;
+    }
 
     if (Settings::RECORD_ONLY_IN_WINDOW) {
         const bool is_inside_record_window = (lat > Settings::RECORD_WIN.min_lat && lat < Settings::RECORD_WIN.max_lat)

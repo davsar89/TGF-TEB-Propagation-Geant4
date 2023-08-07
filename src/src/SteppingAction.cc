@@ -128,7 +128,7 @@ void SteppingAction::UserSteppingAction(const G4Step *aStep)
     //  for leptons : check step size compared to Larmor radius
     if (!Settings::RECORD_PHOT_ONLY)
     {
-        if (PDG == 11 || PDG == -11)
+        if (PDG == PDG_electron || PDG == PDG_positron)
         {
 
             if (track->GetKineticEnergy() >= Settings::MIN_ENERGY_OUTPUT)
