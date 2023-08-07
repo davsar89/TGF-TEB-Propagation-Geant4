@@ -9,6 +9,12 @@
 #        Settings::BEAMING_TYPE = argv[8];
 #        Settings::record_altitude = std::stod(argv[9]);
 version: '3'
+networks:
+  default:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.16.57.0/24
 services:
   GEANT4:
     image: ubuntu:jammy
