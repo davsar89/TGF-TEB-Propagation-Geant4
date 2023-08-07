@@ -30,7 +30,7 @@ namespace Settings {
 
     G4bool OUTPUT_TO_ASCII_FILE = true;
 
-    G4String MAGNETIC_FIELD_MODEL = "IGRF"; // "WMM" or "IGRF" or "GEOLIB", should be WMM on MAC
+    G4String MAGNETIC_FIELD_MODEL = "WMM"; // "WMM" or "IGRF" or "GEOLIB", should be WMM on MAC
     G4String MAGNETIC_FIELD_MODEL_FOR_GEOLIB = "IGRF"; // "WMM" or "IGRF" or "EMM"
     // WARNING : EMM is about 1000 times slower.
 
