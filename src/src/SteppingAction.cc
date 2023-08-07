@@ -32,10 +32,11 @@
 
 #include <SteppingAction.hh>
 
-//If you want to identify the first step in a volume, pick fGeomBoudary status in PreStepPoint.
-//If you want to identify a step getting out of a volume, pick fGeomBoundary status in PostStepPoint
+// If you want to identify the first step in a volume, pick fGeomBoudary status in PreStepPoint.
+// If you want to identify a step getting out of a volume, pick fGeomBoundary status in PostStepPoint
 
-SteppingAction::SteppingAction() {
+SteppingAction::SteppingAction()
+{
 
     earth = new GeographicLib::Geocentric(GeographicLib::Constants::WGS84_a(), GeographicLib::Constants::WGS84_f());
 
@@ -47,31 +48,34 @@ SteppingAction::SteppingAction() {
     //    asciiFile11.close();
 
     min_max_alt = find_min_max_rough_altitude();
-
 }
 
 ///
 
-SteppingAction::~SteppingAction() {
+SteppingAction::~SteppingAction()
+{
     delete analysis;
     delete earth;
 }
 
 ///
 
-void SteppingAction::UserSteppingAction(const G4Step *aStep) {
+void SteppingAction::UserSteppingAction(const G4Step *aStep)
+{
 
     G4Track *track = aStep->GetTrack();
     const G4StepPoint *preStepPoint = aStep->GetPreStepPoint();
 
     const G4int PDG = aStep->GetTrack()->GetParticleDefinition()->GetPDGEncoding();
 
-//	if (!((PDG == PDG_electron) || (PDG == PDG_positron) || (PDG == PDG_photon))) return;
+    //	if (!((PDG == PDG_electron) || (PDG == PDG_positron) || (PDG == PDG_photon))) return;
 
 #ifndef NDEBUG // debug mode only
-    if (Settings::USE_STEP_MAX_for_record) {
+    if (Settings::USE_STEP_MAX_for_record)
+    {
 
-        if (preStepPoint) {
+        if (preStepPoint)
+        {
 
             const G4TouchableHandle &preStepTouch = preStepPoint->GetTouchableHandle();
             const G4VPhysicalVolume *volume = preStepTouch->GetVolume();
@@ -80,11 +84,14 @@ void SteppingAction::UserSteppingAction(const G4Step *aStep) {
             const G4Region *region = lVolume->GetRegion();
             const G4String reg_name = region->GetName();
 
-            if (reg_name == "RECORD_REGION") {
-//                const double rough_altitude = (aStep->GetPreStepPoint()->GetPosition().mag() - earth_radius) / km;
-//                if (PDG==22) G4cout << aStep->GetStepLength()/m << G4endl;
-                if ((PDG == PDG_electron) || (PDG == PDG_positron) || (PDG == PDG_photon)) {
-                    if ((aStep->GetStepLength() > Settings::STEP_MAX_RECORD_AREA)) {
+            if (reg_name == "RECORD_REGION")
+            {
+                //                const double rough_altitude = (aStep->GetPreStepPoint()->GetPosition().mag() - earth_radius) / km;
+                //                if (PDG==22) G4cout << aStep->GetStepLength()/m << G4endl;
+                if ((PDG == PDG_electron) || (PDG == PDG_positron) || (PDG == PDG_photon))
+                {
+                    if ((aStep->GetStepLength() > Settings::STEP_MAX_RECORD_AREA))
+                    {
                         G4cout << "Current step length : " << aStep->GetStepLength() / meter << " meter" << G4endl;
                         G4cout << "Error in SteppingAction : step is lager than the maximum allowed." << G4endl;
                         std::abort();
@@ -98,33 +105,42 @@ void SteppingAction::UserSteppingAction(const G4Step *aStep) {
 
     G4double global_time = track->GetGlobalTime();
 
-    if (!Settings::RECORD_PHOT_ONLY) {
-        if (global_time > Settings::TIME_LIMIT) {
+    if (!Settings::RECORD_PHOT_ONLY)
+    {
+        if (global_time > Settings::TIME_LIMIT)
+        {
             track->SetTrackStatus(fStopAndKill);
             return;
         }
     }
 
-    if (track->GetKineticEnergy() < Settings::MIN_ENERGY_OUTPUT) { // killing particles with energy lower than threshold
-        if (PDG != PDG_positron) { // don't kill positrons to make sure they do annihilation before disappearing
+    if (track->GetKineticEnergy() < Settings::MIN_ENERGY_OUTPUT)
+    { // killing particles with energy lower than threshold
+        if (PDG != PDG_positron)
+        { // don't kill positrons to make sure they do annihilation before disappearing
             track->SetTrackStatus(fStopAndKill);
             return;
         }
     }
 
-//#ifndef NDEBUG // debug mode only
-//    if (Settings::CHECK_ELECTRON_TRACKING_IN_MAG_FIELD) {
-    // for leptons : check step size compared to Larmor radius
-    if (!Settings::RECORD_PHOT_ONLY) {
-        if (PDG == 11 || PDG == -11) {
+    // #ifndef NDEBUG // debug mode only
+    //     if (Settings::CHECK_ELECTRON_TRACKING_IN_MAG_FIELD) {
+    //  for leptons : check step size compared to Larmor radius
+    if (!Settings::RECORD_PHOT_ONLY)
+    {
+        if (PDG == 11 || PDG == -11)
+        {
 
-            if (track->GetKineticEnergy() >= Settings::MIN_ENERGY_OUTPUT) {
+            if (track->GetKineticEnergy() >= Settings::MIN_ENERGY_OUTPUT)
+            {
 
                 const G4double rough_altitude_km = (aStep->GetPreStepPoint()->GetPosition().mag() - earth_radius) / km;
 
-                if (rough_altitude_km > 30.) {
+                if (rough_altitude_km > 30.)
+                {
 
-                    if ((previous_pos - track->GetPosition()).mag() > 200.0 * meter) {
+                    if ((previous_pos - track->GetPosition()).mag() > 200.0 * meter)
+                    {
                         double larmor_radius_m = 0;
 
                         // the global field manager is actually a myG4FieldManager type (set un FieldSetup.cc)
@@ -137,7 +153,8 @@ void SteppingAction::UserSteppingAction(const G4Step *aStep) {
 #ifndef NDEBUG // debug mode only
                         const double step_length_m = aStep->GetStepLength() / m;
 
-                        if (step_length_m > larmor_radius_m / 8.0) {
+                        if (step_length_m > larmor_radius_m / 8.0)
+                        {
                             G4cout << rough_altitude_km << G4endl;
                             G4cout << step_length_m << G4endl;
                             G4cout << larmor_radius_m / 8.0 << G4endl;
@@ -148,24 +165,25 @@ void SteppingAction::UserSteppingAction(const G4Step *aStep) {
 
                         // affects only charged particles
                         G4TransportationManager::GetTransportationManager()->GetPropagatorInField()->SetLargestAcceptableStep(
-                                larmor_radius_m * m / 10.0);
+                            larmor_radius_m * m / 10.0);
 
                         myG4FieldMan->Set_Larmor_Radius(larmor_radius_m);
-
                     }
                 }
             }
         }
     }
-//    }
-//#endif // end debug mode only
-// kill photons that reached a too high altitude
-// kill also electrons and positrons if the setting RECORD_PHOT_ONLY is set.
-    if (PDG == PDG_photon || ((PDG == PDG_electron || PDG == PDG_positron) && Settings::RECORD_PHOT_ONLY)) {
+    //    }
+    // #endif // end debug mode only
+    // kill photons that reached a too high altitude
+    // kill also electrons and positrons if the setting RECORD_PHOT_ONLY is set.
+    if (PDG == PDG_photon || ((PDG == PDG_electron || PDG == PDG_positron) && Settings::RECORD_PHOT_ONLY))
+    {
 
         const double rough_altitude = aStep->GetPreStepPoint()->GetPosition().mag() - earth_radius;
 
-        if (rough_altitude > photon_max_altitude) {
+        if (rough_altitude > photon_max_altitude)
+        {
             aStep->GetTrack()->SetTrackStatus(fStopAndKill);
             return;
         }
@@ -173,17 +191,35 @@ void SteppingAction::UserSteppingAction(const G4Step *aStep) {
 
     ///////////////////////////////////////////////////////////////////////////
 
-    record_particles(aStep, PDG);
-
+    if (Settings::RECORD_ELEC_POSI_ONLY)
+    {
+        if (PDG == PDG_electron || PDG == PDG_positron)
+        {
+            record_particles(aStep, PDG);
+        }
+    }
+    else if (Settings::RECORD_PHOT_ONLY)
+    {
+        if (PDG == PDG_photon)
+        {
+            record_particles(aStep, PDG);
+        }
+    }
+    else
+    {
+        record_particles(aStep, PDG);
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////
 
-void SteppingAction::record_particles(const G4Step *aStep, const int PDG) {
+void SteppingAction::record_particles(const G4Step *aStep, const int PDG)
+{
 
     const double rough_altitude = aStep->GetPreStepPoint()->GetPosition().mag() - earth_radius;
 
-    if (rough_altitude > min_max_alt.min_val * km * 0.9 && rough_altitude < min_max_alt.max_val * km * 1.1) {
+    if (rough_altitude > min_max_alt.min_val * km * 0.9 && rough_altitude < min_max_alt.max_val * km * 1.1)
+    {
 
         const G4Track *track = aStep->GetTrack();
 
@@ -194,7 +230,7 @@ void SteppingAction::record_particles(const G4Step *aStep, const int PDG) {
         double ecef_y = thePrePoint->GetPosition().y() / m;
         double ecef_z = thePrePoint->GetPosition().z() / m;
         double pre_lat, pre_lon, pre_alt;
-//        geod_conv::GeodeticConverter::ecef2Geodetic(ecef_x, ecef_y, ecef_z, pre_lat, pre_lon, pre_alt);
+        //        geod_conv::GeodeticConverter::ecef2Geodetic(ecef_x, ecef_y, ecef_z, pre_lat, pre_lon, pre_alt);
         earth->Reverse(ecef_x, ecef_y, ecef_z,
                        pre_lat, pre_lon, pre_alt);
 
@@ -205,28 +241,30 @@ void SteppingAction::record_particles(const G4Step *aStep, const int PDG) {
         double post_lat, post_lon, post_alt;
 
         // skip if it is a point that is fixed (should not happen, but just in case)
-        if (ecef_x == ecef_x2 && ecef_y == ecef_y2 && ecef_z == ecef_z2) {
+        if (ecef_x == ecef_x2 && ecef_y == ecef_y2 && ecef_z == ecef_z2)
+        {
             return;
         }
 
-//        geod_conv::GeodeticConverter::ecef2Geodetic(ecef_x2, ecef_y2, ecef_z2, post_lat, post_lon, post_alt);
+        //        geod_conv::GeodeticConverter::ecef2Geodetic(ecef_x2, ecef_y2, ecef_z2, post_lat, post_lon, post_alt);
         earth->Reverse(ecef_x2, ecef_y2, ecef_z2,
                        post_lat, post_lon, post_alt);
 
         if ((pre_alt / 1000.0 <= Settings::record_altitude && post_alt / 1000.0 > Settings::record_altitude) ||
-            (pre_alt / 1000.0 > Settings::record_altitude && post_alt / 1000.0 <= Settings::record_altitude)) {
+            (pre_alt / 1000.0 > Settings::record_altitude && post_alt / 1000.0 <= Settings::record_altitude))
+        {
 
             const double energy = thePrePoint->GetKineticEnergy();
 
             const double delta_time = project_to_record_alt(
-                    PDG, // input
-                    energy, // input
-                    ecef_x, ecef_y, ecef_z, // modified (input and output)
-                    pre_lat, pre_lon, pre_alt); // input
+                PDG,                        // input
+                energy,                     // input
+                ecef_x, ecef_y, ecef_z,     // modified (input and output)
+                pre_lat, pre_lon, pre_alt); // input
 
             double pre_lat2, pre_lon2, pre_alt2;
-//            geod_conv::GeodeticConverter::ecef2Geodetic(ecef_x, ecef_y, ecef_z, // inputs
-//                                                        pre_lat2, pre_lon2, pre_alt2); // outputs
+            //            geod_conv::GeodeticConverter::ecef2Geodetic(ecef_x, ecef_y, ecef_z, // inputs
+            //                                                        pre_lat2, pre_lon2, pre_alt2); // outputs
             earth->Reverse(ecef_x, ecef_y, ecef_z,
                            pre_lat2, pre_lon2, pre_alt2);
 
@@ -234,7 +272,7 @@ void SteppingAction::record_particles(const G4Step *aStep, const int PDG) {
                                            pre_alt2 * meter);
 
             const double time =
-                    (thePrePoint->GetGlobalTime() + delta_time * second) / microsecond;
+                (thePrePoint->GetGlobalTime() + delta_time * second) / microsecond;
 
             const double mom_x = thePrePoint->GetMomentumDirection().getX();
             const double mom_y = thePrePoint->GetMomentumDirection().getY();
@@ -242,20 +280,23 @@ void SteppingAction::record_particles(const G4Step *aStep, const int PDG) {
 
             G4int event_nb = 0;
             const G4Event *evt = G4RunManager::GetRunManager()->GetCurrentEvent();
-            if (evt) event_nb = evt->GetEventID();
+            if (evt)
+                event_nb = evt->GetEventID();
 
             analysis->save_in_output_buffer(
-                    PDG, time, energy / keV, dist_rad / km, ID, ecef_x / 1000.0,
-                    ecef_y / 1000.0, ecef_z / 1000.0, // from m to km
-                    mom_x, mom_y, mom_z, pre_lat2, pre_lon2, pre_alt2, event_nb);
+                PDG, time, energy / keV, dist_rad / km, ID, ecef_x / 1000.0,
+                ecef_y / 1000.0, ecef_z / 1000.0, // from m to km
+                mom_x, mom_y, mom_z, pre_lat2, pre_lon2, pre_alt2, event_nb);
 
             // kill after record if photon, to make 100% sure there is no double record
-            if (PDG == PDG_photon) aStep->GetTrack()->SetTrackStatus(fStopAndKill);
+            if (PDG == PDG_photon)
+                aStep->GetTrack()->SetTrackStatus(fStopAndKill);
 
-            if (Settings::RECORD_PHOT_ONLY) {
-                if (PDG == PDG_electron || PDG == PDG_positron) aStep->GetTrack()->SetTrackStatus(fStopAndKill);
+            if (Settings::RECORD_PHOT_ONLY)
+            {
+                if (PDG == PDG_electron || PDG == PDG_positron)
+                    aStep->GetTrack()->SetTrackStatus(fStopAndKill);
             }
-
         }
     }
 }
@@ -263,7 +304,8 @@ void SteppingAction::record_particles(const G4Step *aStep, const int PDG) {
 ///////////////////////////////////////////////////////////////////////////
 
 G4double SteppingAction::Get_dist_rad(const G4double &lat, const G4double &lon,
-                                      const G4double &alt_record) {
+                                      const G4double &alt_record)
+{
     // getting the radial distance (along curve parrallel to Earth surface)
     // Equirectangular approximation -> leads to "effective speed" of the output
     // data that can be slightly greater than the speed of light
@@ -276,15 +318,15 @@ G4double SteppingAction::Get_dist_rad(const G4double &lat, const G4double &lon,
     //    G4double dist_rad = sqrt(pow(xx, 2) + pow(yyy, 2)) * RR;
     // haversine formula (better)
     const G4double RR = (Settings::earthRadius + alt_record);
-    const G4double phi1 = (lat) * degree;
-    const G4double phi2 = (Settings::SOURCE_LAT) * degree;
+    const G4double phi1 = (lat)*degree;
+    const G4double phi2 = (Settings::SOURCE_LAT)*degree;
     const G4double delta_phi = (phi2 - phi1);
     const G4double sin_delta_phi_over_2 = sin(delta_phi / 2.);
     const G4double delta_lambda = (Settings::SOURCE_LONG - lon) * degree;
     const G4double sin_delta_lambda_over_2 = sin(delta_lambda / 2.);
     const G4double aa =
-            sin_delta_phi_over_2 * sin_delta_phi_over_2 +
-            cos(phi1) * cos(phi2) * sin_delta_lambda_over_2 * sin_delta_lambda_over_2;
+        sin_delta_phi_over_2 * sin_delta_phi_over_2 +
+        cos(phi1) * cos(phi2) * sin_delta_lambda_over_2 * sin_delta_lambda_over_2;
     const G4double cc = 2.0 * atan2(sqrt(aa), sqrt(1.0 - aa));
     // G4double cc = 2. * std::asin(std::min(1., sqrt(aa)));
     const G4double dist_rad = RR * cc;
@@ -293,7 +335,8 @@ G4double SteppingAction::Get_dist_rad(const G4double &lat, const G4double &lon,
 
 ///////////////////////////////////////////////////////////////////////////
 
-SteppingAction::min_max_altitudes SteppingAction::find_min_max_rough_altitude() {
+SteppingAction::min_max_altitudes SteppingAction::find_min_max_rough_altitude()
+{
 
     grid_latitude = linspace(-90.0, 90.0, nb);
     grid_longitude = linspace(-180.0, 180.0, nb);
@@ -305,21 +348,25 @@ SteppingAction::min_max_altitudes SteppingAction::find_min_max_rough_altitude() 
     double min_rough_alt = 1000.0;
     double max_rough_alt = 0.0;
 
-    for (int i_lat = 0; i_lat < nb; ++i_lat) {
-        for (int i_lon = 0; i_lon < nb; ++i_lon) {
+    for (int i_lat = 0; i_lat < nb; ++i_lat)
+    {
+        for (int i_lon = 0; i_lon < nb; ++i_lon)
+        {
 
             double lat = grid_latitude[i_lat];
             double lon = grid_longitude[i_lon];
 
             rough_alt = find_rough_altitude_for_real_altitude(
-                    lat,
-                    lon,
-                    target_alt);
+                lat,
+                lon,
+                target_alt);
 
-            if (rough_alt < min_rough_alt) {
+            if (rough_alt < min_rough_alt)
+            {
                 min_rough_alt = rough_alt;
             }
-            if (rough_alt > max_rough_alt) {
+            if (rough_alt > max_rough_alt)
+            {
                 max_rough_alt = rough_alt;
             }
         }
@@ -334,12 +381,13 @@ SteppingAction::min_max_altitudes SteppingAction::find_min_max_rough_altitude() 
 
 ///////////////////////////////////////////////////////////////////////////
 
-double SteppingAction::find_rough_altitude_for_real_altitude(const double &lat, const double &lon, const double &target_alt) {
+double SteppingAction::find_rough_altitude_for_real_altitude(const double &lat, const double &lon, const double &target_alt)
+{
 
     double ecef_x, ecef_y, ecef_z;
     G4ThreeVector ECEF_position{0, 0, 0};
 
-//    geod_conv::GeodeticConverter::geodetic2ecef(lat, lon, target_alt * 1000.0, ecef_x, ecef_y, ecef_z);
+    //    geod_conv::GeodeticConverter::geodetic2ecef(lat, lon, target_alt * 1000.0, ecef_x, ecef_y, ecef_z);
     earth->Forward(lat, lon, target_alt * 1000.0, ecef_x, ecef_y, ecef_z);
     ECEF_position.setX(ecef_x);
     ECEF_position.setY(ecef_y);
@@ -353,9 +401,9 @@ double SteppingAction::find_rough_altitude_for_real_altitude(const double &lat, 
 ///////////////////////////////////////////////////////////////////////////
 
 double SteppingAction::project_to_record_alt(
-        const G4int type_number, const double &kinE,
-        double &ecef_x, double &ecef_y, double &ecef_z,
-        const double &lat_in, const double &lon_in, const double &alt_in)
+    const G4int type_number, const double &kinE,
+    double &ecef_x, double &ecef_y, double &ecef_z,
+    const double &lat_in, const double &lon_in, const double &alt_in)
 // input and output lengths are in meters
 // input energy is in keV
 // output time is in seconds
@@ -383,11 +431,14 @@ double SteppingAction::project_to_record_alt(
     ecef_z += -local_vertical_z * delta_alt;
     double delta_time = 0;
 
-    if (type_number == 22) {
+    if (type_number == 22)
+    {
         delta_time = -delta_alt / sol_SI;
         beta = 1.0;
         gammaa = 1.e6;
-    } else {
+    }
+    else
+    {
         gammaa = kinE / (510.9989461 * keV) + 1.0;
         beta = std::sqrt(1.0 - std::pow(gammaa, -2.0));
         delta_time = -delta_alt / (beta * sol_SI);
@@ -395,7 +446,8 @@ double SteppingAction::project_to_record_alt(
 
 #ifndef NDEBUG // debug mode
 
-    if (std::isnan(alt_in)) {
+    if (std::isnan(alt_in))
+    {
         G4cout << G4endl
                << "Error: alt_in is Nan in SensitiveDet::project_to_record_alt. "
                   "Aborting"

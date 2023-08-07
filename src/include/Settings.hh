@@ -54,7 +54,9 @@ namespace Settings {
 
     extern double SOURCE_SIGMA_TIME ; // microsecond
 
-    extern G4bool RECORD_PHOT_ONLY ;      // record only photons
+    extern G4bool RECORD_PHOT_ONLY ; // record only photons
+    
+    extern G4bool RECORD_ELEC_POSI_ONLY; // record only electrons and positrons
 
     // force max step only for layers where particles are recorded
     extern G4bool USE_STEP_MAX_for_record ;
