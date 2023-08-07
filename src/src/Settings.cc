@@ -18,9 +18,9 @@ namespace Settings {
 
     /// Below variables should stay CONSTANT
 
-    G4bool RECORD_PHOT_ONLY = false; // record only photons
+    G4bool RECORD_PHOT_ONLY = false; // record only photons (i.e. skip electrons and positrons)
     
-    G4bool RECORD_ELEC_POSI_ONLY = false; // record only electrons and positrons
+    G4bool RECORD_ELEC_POSI_ONLY = false; // record only electrons and positrons (i.e. skip photons)
 
     // force max step only for layers where particles are recorded
     G4bool USE_STEP_MAX_for_record = true;
