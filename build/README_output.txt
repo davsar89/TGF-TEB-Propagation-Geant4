@@ -12,7 +12,7 @@ Each output file contains a list of recorded particles with the following column
 	- altitude of record (km), should always be equal to the same value (e.g. 400)
 	- latitude of record (deg)
 	- longitude of record (deg)
-    - radial distance (km) of record, with respect to TGF source position
+        - radial distance (km) of record, with respect to TGF source position
 	- ECEF x coordinate of the recorded particle
 	- ECEF y coordinate of the recorded particle
 	- ECEF z coordinate of the recorded particle
