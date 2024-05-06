@@ -79,7 +79,7 @@ Analysis::Analysis()
 
     createDirectory(output_folder_name);
 
-    asciiFileName = output_folder_name + "/detParticles_" + output_filename_second_part;
+    asciiFileName = output_folder_name + "detParticles_" + output_filename_second_part;
 
     std::ofstream asciiFile(asciiFileName,
                               std::ios::trunc); // to clean the output file
