@@ -42,6 +42,8 @@
 namespace Settings {
     extern long RAND_SEED;
 
+    extern int NB_EVENT_TOTAL;
+
     extern double SOURCE_LAT ;  // degree
     extern double SOURCE_LONG ; // degree
     extern double SOURCE_ALT ;    // km

@@ -36,6 +36,12 @@
 #include "globals.hh"
 #include "G4TransportationManager.hh"
 #include "G4PropagatorInField.hh"
+#include <chrono>
+#include <iostream>
+#include <thread>
+#include <sstream>
+#include <iomanip>
+
 
 // ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -56,6 +62,9 @@ private:
 
     G4int printModulo = 10000;
     G4int evtNb = 0;
+    std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
+
+    std::string estimateRemainingTime(const int evtNb, int const NB_EVENT_TOTAL, const std::chrono::steady_clock::time_point &start_time);
 
 };
 

@@ -68,8 +68,11 @@ void EventAction::BeginOfEventAction(const G4Event *evt)
     }
     if (evtNb % printModulo == 0)
     {
-        std::string dt_str = myUtils::getCurrentDateTimeStr();
+        const std::string dt_str = myUtils::getCurrentDateTimeStr();
+        const std::string remaining_time_str = estimateRemainingTime(evtNb, Settings::NB_EVENT_TOTAL, start_time);
         G4cout << "-- " << dt_str << ":---> Begin Of Event: " << evtNb << G4endl;
+        G4cout << "                   "
+               << "Remaining duration: " << remaining_time_str << " (for " << Settings::NB_EVENT_TOTAL << " events)" << G4endl;
     }
     //}
 }
@@ -78,12 +81,37 @@ void EventAction::BeginOfEventAction(const G4Event *evt)
 
 void EventAction::EndOfEventAction(const G4Event *)
 {
-    //     xgreAnalysis* analysis = xgreAnalysis::getInstance();
-    //     if (fTotalEnergyDeposit>5.*keV) analysis->analyseDeposit(fTotalEnergyDeposit);
-    //     if (fTotalEnergyDepositPlas>5.*keV) analysis->analyseDepositPlas(fTotalEnergyDepositPlas);
-    //     if (fOpticalCount>4) analysis->analyseOptical(fOpticalCount);
-    //   G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
-    //   analysisManager->FillH1(1, fTotalEnergyDeposit/keV);
+}
+
+// ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+// Function to estimate remaining time based on completed iterations
+std::string EventAction::estimateRemainingTime(const int evtNb, int const NB_EVENT_TOTAL, const std::chrono::steady_clock::time_point &start_time)
+{
+    if (evtNb == 0)
+    {
+        return "99:99:99"; // Return very long time if no events have been processed
+    }
+
+    std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+    std::chrono::steady_clock::duration time_elapsed = now - start_time;
+    std::chrono::steady_clock::duration average_time_per_event = time_elapsed / evtNb;
+    int events_left = NB_EVENT_TOTAL - evtNb;
+    std::chrono::steady_clock::duration remaining_time = average_time_per_event * events_left;
+
+    // Convert remaining_time to hours, minutes, and seconds
+    auto seconds = std::chrono::duration_cast<std::chrono::seconds>(remaining_time).count();
+    int hours = seconds / 3600;
+    int minutes = (seconds % 3600) / 60;
+    seconds = seconds % 60;
+
+    // Format time into a string "HH:MM:SS"
+    std::ostringstream stream;
+    stream << std::setw(2) << std::setfill('0') << hours << ":"
+           << std::setw(2) << std::setfill('0') << minutes << ":"
+           << std::setw(2) << std::setfill('0') << seconds;
+
+    return stream.str();
 }
 
 // ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

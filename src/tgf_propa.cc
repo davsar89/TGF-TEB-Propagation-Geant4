@@ -79,7 +79,7 @@ int main(int argc, char **argv)
 
     if (argc > 3)
     {
-        number_st = argv[1];
+        Settings::NB_EVENT_TOTAL = std::stoi(argv[1]);
         Settings::SOURCE_ALT = std::stod(argv[2]);
         Settings::SOURCE_LAT = std::stod(argv[3]);
         Settings::SOURCE_LONG = std::stod(argv[4]);
@@ -93,10 +93,9 @@ int main(int argc, char **argv)
     {
         // default values can be seen in src/include/Settings::hh
         Mode = "run";
-        number_st = "1000000";
     }
 
-    int nb_cores = 1;
+    number_st = std::to_string(Settings::NB_EVENT_TOTAL);
 
     //// choose the Random engine and give seed
     G4Random::setTheEngine(new CLHEP::MixMaxRng);

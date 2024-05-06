@@ -4,6 +4,8 @@ namespace Settings {
 
     long RAND_SEED = 777 ;
 
+    int NB_EVENT_TOTAL = 1000000;
+
     double SOURCE_LAT = -7.0492;  // degree
     double SOURCE_LONG = 55.9129; // degree
     double SOURCE_ALT = 15.;    // km
