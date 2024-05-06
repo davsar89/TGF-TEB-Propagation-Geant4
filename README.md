@@ -29,7 +29,7 @@ Most of settings can be adjusted in `src/Settings.cc`. In particular:
 - `Settings::SOURCE_LONG` = TGF source longitude in degrees
 - `Settings::SOURCE_OPENING_ANGLE` = half-cone TGF opening angle in degrees if "Uniform" is selected for `Settings::BEAMING_TYPE`. If "Gaussian" is selected for `Settings::BEAMING_TYPE`, it is the sigma of the gaussian distribution.
 - `Settings::TILT_ANGLE` = TGF tilt angle in degrees. Default is 0 degrees.
-- `Settings::BEAMING_TYPE` = TGF beaming type, that is a string that values "Uniform" or "Gaussian" for isotropic or gaussian distribution.
+- `Settings::BEAMING_TYPE` = TGF beaming type, that is a string that values "Uniform" or "Gaussian" for isotropic (within half cone angle) or gaussian distribution.
 - `Settings::SOURCE_SIGMA_TIME` = TGF sigma time. Assumes the TGF has an intrinsic duration, that has Gaussian (=normal) distribution. The parameter is the sigma of this distribution, in microseconds. Default is 0.
 ### Other settings:
 - Two modes are possible: `visualization` and `run`. `visualization` will show the 3D geometry (simplified Earth) and particle track. `run` will not show any 3D visualization, to run the code as quickly as possible. By default, the mode is set to `visu` if no input argument for the executable is specified and `run` otherwise. This can be changed by editing the `G4String` variable `Mode` in the main function located in the source file `src/tgf_propa.cc`, that can be set to `"visu"` or `"run"`. Default mode is `visu`.
