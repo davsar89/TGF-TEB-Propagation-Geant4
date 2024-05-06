@@ -98,8 +98,8 @@ int main(int argc, char **argv) {
     //// choose the Random engine and give seed
     G4Random::setTheEngine(new CLHEP::MixMaxRng);
     long seeds[2];
-    seeds[0] = myUtils::generate_a_unique_ID();
-    seeds[1] = myUtils::generate_a_unique_ID();
+    seeds[0] = myUtils::generateUniqueRandomLong();
+    seeds[1] = myUtils::generateUniqueRandomLong();
     G4Random::setTheSeeds(seeds, 2);
 
     Settings::RAND_SEED = seeds[0];

@@ -1,21 +1,32 @@
 #pragma once
 
 #include <chrono>
-#include <CoordTopocentric.h>
-#include <CoordGeodetic.h>
-#include <Observer.h>
-#include <SGP4.h>
-#include <DateTime.h>
 #include <vector>
 #include <string>
 #include <G4ios.hh>
 #include <iostream>
 #include <fstream>
 #include <thread>
-#include "GeographicLib/Math.hpp"
-#include <uuid/uuid.h>
-
+#include "Settings.hh"
 #include "Randomize.hh"
+#include "sys/types.h"
+#include "sys/sysinfo.h"
+#include "stdlib.h"
+#include "stdio.h"
+#include "string.h"
+#include <uuid/uuid.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <G4ThreeVector.hh>
+#include <mutex>
+#include <unordered_set>
+#include <random>
+#include <CoordTopocentric.h>
+#include <CoordGeodetic.h>
+#include <Observer.h>
+#include <SGP4.h>
+#include <DateTime.h>
+#include "GeographicLib/Math.hpp"
 
 namespace myUtils {
 
@@ -42,6 +53,7 @@ namespace myUtils {
     long reversDigits(long num);
     bool addOvf(long *result, long a, long b);
     long generate_a_unique_ID();
+    long generateUniqueRandomLong(); // alternative to generate_a_unique_ID
 
     namespace datetools {
         namespace details {

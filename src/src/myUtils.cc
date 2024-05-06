@@ -231,4 +231,17 @@ namespace myUtils
         std::cout << output << std::endl;
         return output;
     }
+    
+    long generateUniqueRandomLong() // alternative to generate_a_unique_ID
+    {
+        auto now = std::chrono::high_resolution_clock::now();
+        auto duration = now.time_since_epoch();
+        auto nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();
+        auto pid = getpid();
+        long base = static_cast<long>((nanoseconds % 1000000000L) ^ (pid % 100000L));
+        std::random_device rd;
+        std::mt19937 eng(rd());
+        std::uniform_int_distribution<long> distr;
+        return base ^ distr(eng);
+    }
 } // namespace myUtils
