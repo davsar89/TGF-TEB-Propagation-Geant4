@@ -22,6 +22,7 @@ contact : <david (dot) sarria (at) uib (dot) no>
 ## Simulation Settings:
 Most of settings can be adjusted in `src/Settings.cc`. In particular:
 - `Settings::RECORD_PHOT_ONLY` = boolean to record only photons (not recording electrons and positrons, and also turning OFF the magnetic field).
+- `Settings::RECORD_ELEC_POSI_ONLY` = boolean to record only electrons and positrons (not recording photons).
 - `Settings::record_altitude` = record altitude (in km) of the TGF, default is 408 km.
 - `Settings::SOURCE_ALT` = TGF source altitude in km, default is 15 km
 - `Settings::SOURCE_LAT` = TGF source latitude in degrees
