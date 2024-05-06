@@ -88,9 +88,9 @@ void EventAction::EndOfEventAction(const G4Event *)
 // Function to estimate remaining time based on completed iterations
 std::string EventAction::estimateRemainingTime(const int evtNb, int const NB_EVENT_TOTAL, const std::chrono::steady_clock::time_point &start_time)
 {
-    if (evtNb == 0)
+    if (evtNb <= 5)
     {
-        return "99:99:99"; // Return very long time if no events have been processed
+        return "99:99:99"; // Return very long time if very few events have been processed
     }
 
     std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
