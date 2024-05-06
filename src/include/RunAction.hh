@@ -55,5 +55,5 @@ public:
 
 private:
 
-    Analysis *analysis = new Analysis();
+    Analysis& analysis = Analysis::getInstance();
 };

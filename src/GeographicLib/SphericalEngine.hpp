@@ -12,6 +12,7 @@
 
 #include <vector>
 #include <istream>
+#include <iostream>
 #include <GeographicLib/Constants.hpp>
 
 #if defined(_MSC_VER)

@@ -43,7 +43,7 @@ void RunAction::BeginOfRunAction(const G4Run *) {
 
 void RunAction::EndOfRunAction(const G4Run *) {
 
-    analysis->write_in_output_file_endOfRun();
+    analysis.write_in_output_file_endOfRun();
 }
 
 void RunAction::Update(G4double) {

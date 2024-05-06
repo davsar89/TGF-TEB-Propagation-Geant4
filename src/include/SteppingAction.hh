@@ -101,7 +101,7 @@ private:
 
     G4ThreeVector previous_pos{0, 0, 0};
 
-    Analysis *analysis = new Analysis();
+    Analysis& analysis = Analysis::getInstance();
 
     double sol_SI = 299792458.0;
 

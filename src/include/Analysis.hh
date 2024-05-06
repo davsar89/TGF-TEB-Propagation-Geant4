@@ -30,32 +30,37 @@
 ////////////////////////////////////////////////////////////////////////////////
 #pragma once
 
-#include <Analysis.hh>
 #include <Settings.hh>
 #include <fstream>
 #include <iomanip>
-
+#include <iostream>
+#include <filesystem>
 #include "G4SteppingManager.hh"
 #include "G4Track.hh"
-
 #include "G4ios.hh"
 #include "globals.hh"
-
-#include "Settings.hh"
 #include <chrono>
-#include "G4Threading.hh"
-#include "G4AutoLock.hh"
 #include "myUtils.hh"
+#include <sys/stat.h>
+#include <sys/types.h>
 
 typedef unsigned int uint;
 
 class G4Track;
 
-class Analysis {
+class Analysis
+{
 public:
-    Analysis();
+    // Delete copy constructor and assignment operator
+    Analysis(const Analysis &) = delete;
+    Analysis &operator=(const Analysis &) = delete;
 
-    ~Analysis();
+    // Static method to access class instance
+    static Analysis &getInstance()
+    {
+        static Analysis instance; // Local static variable
+        return instance;
+    }
 
     void save_in_output_buffer(const G4int PDG_NB, const G4double &time,
                                const G4double &energy, const G4double &dist_rad,
@@ -70,7 +75,10 @@ public:
 
     void write_in_output_file_endOfRun();
 
+    bool createDirectory(const std::string &dir);
+
 private:
+    Analysis();
 
     const uint output_buffer_size = 2;
     //
@@ -81,8 +89,7 @@ private:
 
     std::vector<G4String> output_lines;
 
-    G4String asciiFileName2="0";
+    G4String asciiFileName = "0";
 
     //
-
 };

@@ -70,13 +70,15 @@ using namespace std;
 
 /////////////////////////////////////////////////////////
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
     double wall0 = myUtils::get_wall_time();
 
     G4String number_st;
     G4String Mode = "run";
 
-    if (argc > 3) {
+    if (argc > 3)
+    {
         number_st = argv[1];
         Settings::SOURCE_ALT = std::stod(argv[2]);
         Settings::SOURCE_LAT = std::stod(argv[3]);
@@ -86,14 +88,15 @@ int main(int argc, char **argv) {
         Settings::TILT_ANGLE = std::stod(argv[7]);
         Settings::BEAMING_TYPE = argv[8];
         Settings::record_altitude = std::stod(argv[9]);
-
-    } else {
+    }
+    else
+    {
         // default values can be seen in src/include/Settings::hh
         Mode = "run";
         number_st = "1000000";
     }
 
-    int nb_cores=1;
+    int nb_cores = 1;
 
     //// choose the Random engine and give seed
     G4Random::setTheEngine(new CLHEP::MixMaxRng);
@@ -122,7 +125,8 @@ int main(int argc, char **argv) {
     // get the pointer to the User Interface manager
     G4UImanager *UImanager = G4UImanager::GetUIpointer();
 
-    if (Mode == "visu") {
+    if (Mode == "visu")
+    {
 #ifdef G4VIS_USE
         G4VisManager *visManager = new G4VisExecutive;
         visManager->Initialize();
@@ -138,7 +142,9 @@ int main(int argc, char **argv) {
 #ifdef G4VIS_USE
         delete visManager;
 #endif // ifdef G4VIS_USE
-    } else if (Mode == "run") {
+    }
+    else if (Mode == "run")
+    {
         UImanager->ApplyCommand("/run/beamOn " + number_st);
     }
 

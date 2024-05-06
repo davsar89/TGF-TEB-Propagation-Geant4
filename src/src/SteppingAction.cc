@@ -54,7 +54,6 @@ SteppingAction::SteppingAction()
 
 SteppingAction::~SteppingAction()
 {
-    delete analysis;
     delete earth;
 }
 
@@ -283,7 +282,7 @@ void SteppingAction::record_particles(const G4Step *aStep, const int PDG)
             if (evt)
                 event_nb = evt->GetEventID();
 
-            analysis->save_in_output_buffer(
+            analysis.save_in_output_buffer(
                 PDG, time, energy / keV, dist_rad / km, ID, ecef_x / 1000.0,
                 ecef_y / 1000.0, ecef_z / 1000.0, // from m to km
                 mom_x, mom_y, mom_z, pre_lat2, pre_lon2, pre_alt2, event_nb);

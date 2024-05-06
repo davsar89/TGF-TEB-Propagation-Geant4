@@ -30,19 +30,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <Analysis.hh>
-#include <Settings.hh>
-#include <fstream>
-#include <iomanip>
-
-#include "G4SteppingManager.hh"
-#include "G4Track.hh"
-
-
-#include <thread>
-#include <chrono>
 
 // constructor
-Analysis::Analysis() {
+Analysis::Analysis()
+{
 
     ///
 
@@ -51,35 +42,51 @@ Analysis::Analysis() {
     ///
 
     const G4String output_filename_second_part =
-            std::to_string(Settings::RAND_SEED) + "_" +
-            std::to_string(int(ALT_MAX_RECORDED)) + "_" +
-            std::to_string(int(Settings::SOURCE_ALT)) + "_" +
-            std::to_string(int(Settings::SOURCE_OPENING_ANGLE)) + "_" +
-            Settings::BEAMING_TYPE + "_" +
-            std::to_string(int(Settings::SOURCE_SIGMA_TIME)) + ".out";
+        std::to_string(Settings::RAND_SEED) + "_" +
+        std::to_string(int(ALT_MAX_RECORDED)) + "_" +
+        std::to_string(int(Settings::SOURCE_ALT)) + "_" +
+        std::to_string(int(Settings::SOURCE_OPENING_ANGLE)) + "_" +
+        Settings::BEAMING_TYPE + "_" +
+        std::to_string(int(Settings::SOURCE_SIGMA_TIME)) + ".out";
     //
 
     //
 
     if ((Settings::BEAMING_TYPE == "Uniform") ||
-        (Settings::BEAMING_TYPE == "uniform")) {
+        (Settings::BEAMING_TYPE == "uniform"))
+    {
         number_beaming = 0;
-    } else if ((Settings::BEAMING_TYPE == "Gaussian") ||
-               (Settings::BEAMING_TYPE == "gaussian") ||
-               (Settings::BEAMING_TYPE == "normal") ||
-               (Settings::BEAMING_TYPE == "Normal")) {
+    }
+    else if ((Settings::BEAMING_TYPE == "Gaussian") ||
+             (Settings::BEAMING_TYPE == "gaussian") ||
+             (Settings::BEAMING_TYPE == "normal") ||
+             (Settings::BEAMING_TYPE == "Normal"))
+    {
         number_beaming = 1;
     }
 
     ///
 
+    const std::string base_outputfolder = "./output_ascii/";
+
+    createDirectory(base_outputfolder);
+
+    std::string output_folder_name = base_outputfolder + std::to_string(int(ALT_MAX_RECORDED)) + "_" +
+                              std::to_string(int(Settings::SOURCE_ALT)) + "_" +
+                              std::to_string(int(Settings::SOURCE_OPENING_ANGLE)) + "_" +
+                              Settings::BEAMING_TYPE + "_" +
+                              std::to_string(int(Settings::SOURCE_SIGMA_TIME))+"/";
+
+    createDirectory(output_folder_name);
+
+    asciiFileName = output_folder_name + "/detParticles_" + output_filename_second_part;
+
+    std::ofstream asciiFile(asciiFileName,
+                              std::ios::trunc); // to clean the output file
+
+    asciiFile.close();
+
     output_lines.clear();
-
-
-        asciiFileName2 = "./output_ascii/detParticles_" + output_filename_second_part;
-        std::ofstream asciiFile00(asciiFileName2,
-                                  std::ios::trunc); // to clean the output file
-        asciiFile00.close();
 }
 
 // ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -88,42 +95,46 @@ G4int Analysis::get_NB_RECORDED() const { return NB_RECORDED; }
 
 // ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-Analysis::~Analysis() = default;
-
-// ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
 void Analysis::save_in_output_buffer(
-        const G4int PDG_NB, const G4double &time, const G4double &energy,
-        const G4double &dist_rad, const G4int ID, const G4double &ecef_x,
-        const G4double &ecef_y, const G4double &ecef_z, const G4double &mom_x,
-        const G4double &mom_y, const G4double &mom_z, const G4double &lat, const G4double &lon, const G4double &alt, const int event_nb) {
+    const G4int PDG_NB, const G4double &time, const G4double &energy,
+    const G4double &dist_rad, const G4int ID, const G4double &ecef_x,
+    const G4double &ecef_y, const G4double &ecef_z, const G4double &mom_x,
+    const G4double &mom_y, const G4double &mom_z, const G4double &lat, const G4double &lon, const G4double &alt, const int event_nb)
+{
 
     //
     double alt2 = alt / 1000.0; // m to km
 
     bool record_or_not = false;
 
-    if (Settings::RECORD_PHOT_ONLY && (PDG_NB == 11 || PDG_NB == -11)) {
-        return;
-    }
-    
-    if (Settings::RECORD_ELEC_POSI_ONLY && PDG_NB == 22) {
+    if (Settings::RECORD_PHOT_ONLY && (PDG_NB == 11 || PDG_NB == -11))
+    {
         return;
     }
 
-    if (Settings::RECORD_ONLY_IN_WINDOW) {
-        const bool is_inside_record_window = (lat > Settings::RECORD_WIN.min_lat && lat < Settings::RECORD_WIN.max_lat)
-                                             && (lon > Settings::RECORD_WIN.min_lon && lon < Settings::RECORD_WIN.max_lon);
+    if (Settings::RECORD_ELEC_POSI_ONLY && PDG_NB == 22)
+    {
+        return;
+    }
 
-        if (is_inside_record_window) record_or_not = true;
-    } else {
+    if (Settings::RECORD_ONLY_IN_WINDOW)
+    {
+        const bool is_inside_record_window = (lat > Settings::RECORD_WIN.min_lat && lat < Settings::RECORD_WIN.max_lat) && (lon > Settings::RECORD_WIN.min_lon && lon < Settings::RECORD_WIN.max_lon);
+
+        if (is_inside_record_window)
+            record_or_not = true;
+    }
+    else
+    {
         record_or_not = true;
     }
 
-    if (record_or_not) {
+    if (record_or_not)
+    {
 
         // ASCII OUTPUT
-        if (Settings::OUTPUT_TO_ASCII_FILE) {
+        if (Settings::OUTPUT_TO_ASCII_FILE)
+        {
             std::stringstream buffer;
             buffer << std::scientific
                    << std::setprecision(5); // scientific notation with
@@ -182,46 +193,89 @@ void Analysis::save_in_output_buffer(
             output_lines.push_back(buffer.str());
             //
             write_in_output_file();
-
         }
     }
 }
 
 // ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-void Analysis::write_in_output_file() {
+void Analysis::write_in_output_file()
+{
 
-    if (output_lines.size() <= output_buffer_size) {
+    if (output_lines.size() <= output_buffer_size)
+    {
         return;
     }
 
-    std::ofstream asciiFile2;
-    asciiFile2.open(asciiFileName2, std::ios::app);
+    std::ofstream asciiFile;
+    asciiFile.open(asciiFileName, std::ios::app);
 
-    if (asciiFile2.is_open()) {
-        for (const G4String &line : output_lines) {
-            asciiFile2 << line;
+    if (asciiFile.is_open())
+    {
+        for (const G4String &line : output_lines)
+        {
+            asciiFile << line;
         }
 
-        asciiFile2.close();
+        asciiFile.close();
         output_lines.clear();
     }
 }
 
 // ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-void Analysis::write_in_output_file_endOfRun() {
-    if (output_lines.empty()) {
+
+void Analysis::write_in_output_file_endOfRun()
+{
+    if (output_lines.empty())
+    {
         return;
     }
 
-    std::ofstream asciiFile1;
-    asciiFile1.open(asciiFileName2, std::ios::app);
+    std::ofstream asciiFile;
+    asciiFile.open(asciiFileName, std::ios::app);
 
-    if (asciiFile1.is_open()) {
-        for (G4String &line : output_lines) {
-            asciiFile1 << line;
+    if (asciiFile.is_open())
+    {
+        for (G4String &line : output_lines)
+        {
+            asciiFile << line;
         }
 
-        asciiFile1.close();
+        asciiFile.close();
         output_lines.clear();
     }
 }
+
+// ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+// Function to create a directory if it does not already exist
+bool Analysis::createDirectory(const std::string &dir)
+{
+    std::cout << "Creating directory:" << dir << std::endl;
+
+    struct stat info;
+    if (stat(dir.c_str(), &info) != 0)
+    {
+        // Directory does not exist, attempt to create it
+        if (mkdir(dir.c_str(), 0755) == 0)
+        {
+            return true; // Directory created successfully
+        }
+        else
+        {
+            std::cerr << "Failed to create directory. Error: " << strerror(errno) << std::endl;
+            return false; // Failed to create directory
+        }
+    }
+    else if (info.st_mode & S_IFDIR)
+    {
+        std::cout << "Directory already exists." << std::endl;
+        return false; // Directory already exists
+    }
+    else
+    {
+        std::cerr << "Path exists but is not a directory." << std::endl;
+        return false; // Path exists but is not a directory
+    }
+}
+
+// ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
