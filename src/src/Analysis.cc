@@ -72,17 +72,17 @@ Analysis::Analysis()
     createDirectory(base_outputfolder);
 
     std::string output_folder_name = base_outputfolder + std::to_string(int(ALT_MAX_RECORDED)) + "_" +
-                              std::to_string(int(Settings::SOURCE_ALT)) + "_" +
-                              std::to_string(int(Settings::SOURCE_OPENING_ANGLE)) + "_" +
-                              Settings::BEAMING_TYPE + "_" +
-                              std::to_string(int(Settings::SOURCE_SIGMA_TIME))+"/";
+                                     std::to_string(int(Settings::SOURCE_ALT)) + "_" +
+                                     std::to_string(int(Settings::SOURCE_OPENING_ANGLE)) + "_" +
+                                     Settings::BEAMING_TYPE + "_" +
+                                     std::to_string(int(Settings::SOURCE_SIGMA_TIME)) + "/";
 
     createDirectory(output_folder_name);
 
     asciiFileName = output_folder_name + "detParticles_" + output_filename_second_part;
 
     std::ofstream asciiFile(asciiFileName,
-                              std::ios::trunc); // to clean the output file
+                            std::ios::trunc); // to clean the output file
 
     asciiFile.close();
 
@@ -252,12 +252,40 @@ bool Analysis::createDirectory(const std::string &dir)
 {
     std::cout << "Creating directory:" << dir << std::endl;
 
+#ifdef _WIN32
+    DWORD ftyp = GetFileAttributesA(dir.c_str());
+    if (ftyp == INVALID_FILE_ATTRIBUTES)
+    {
+        // Directory does not exist, attempt to create it
+        if (CreateDirectoryA(dir.c_str(), NULL))
+        {
+            std::cout << "Directory created successfully." << std::endl;
+            return true; // Directory created successfully
+        }
+        else
+        {
+            std::cerr << "Failed to create directory. Error: " << GetLastError() << std::endl;
+            return false; // Failed to create directory
+        }
+    }
+    else if (ftyp & FILE_ATTRIBUTE_DIRECTORY)
+    {
+        std::cout << "Directory already exists." << std::endl;
+        return false; // Directory already exists
+    }
+    else
+    {
+        std::cerr << "Path exists but is not a directory." << std::endl;
+        return false; // Path exists but is not a directory
+    }
+#else
     struct stat info;
     if (stat(dir.c_str(), &info) != 0)
     {
         // Directory does not exist, attempt to create it
         if (mkdir(dir.c_str(), 0755) == 0)
         {
+            std::cout << "Directory created successfully." << std::endl;
             return true; // Directory created successfully
         }
         else
@@ -276,6 +304,7 @@ bool Analysis::createDirectory(const std::string &dir)
         std::cerr << "Path exists but is not a directory." << std::endl;
         return false; // Path exists but is not a directory
     }
+#endif
 }
 
 // ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

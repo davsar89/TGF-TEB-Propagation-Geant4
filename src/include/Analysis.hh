@@ -41,8 +41,17 @@
 #include "globals.hh"
 #include <chrono>
 #include "myUtils.hh"
+#include <iostream>
+#include <cstring> // For strerror in POSIX
+
+// Include the necessary headers for each OS
+#ifdef _WIN32
+#include <windows.h>
+#else
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <errno.h>
+#endif
 
 typedef unsigned int uint;
 
