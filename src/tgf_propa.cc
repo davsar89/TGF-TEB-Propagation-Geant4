@@ -151,8 +151,7 @@ int main(int argc, char **argv)
     delete runManager;
     //
     double wall1 = myUtils::get_wall_time();
-    G4cout << G4endl << "WALL TIME TAKEN : " << (wall1 - wall0) / 1.e6 << " seconds "
-           << G4endl;
+    G4cout << G4endl << "WALL TIME TAKEN : " << myUtils::formatTime((wall1 - wall0) / 1.e6) << G4endl << G4endl;
     //
     return 0;
 } // main

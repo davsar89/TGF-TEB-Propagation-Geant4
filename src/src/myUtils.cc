@@ -263,4 +263,20 @@ namespace myUtils
         // Return the formatted date and time string
         return ss.str();
     }
+
+    // Function to convert seconds into hh::mm::ss format
+    std::string formatTime(const double seconds)
+    {
+        int hours = static_cast<int>(seconds) / 3600;        // Calculate total hours
+        int minutes = static_cast<int>(seconds) % 3600 / 60; // Calculate total minutes
+        int secs = static_cast<int>(seconds) % 60;           // Calculate remaining seconds
+
+        std::ostringstream oss;
+        // Set fill '0' and width '2' for hh, mm, ss formatting
+        oss << std::setfill('0') << std::setw(2) << hours << ":"
+            << std::setfill('0') << std::setw(2) << minutes << ":"
+            << std::setfill('0') << std::setw(2) << secs;
+
+        return oss.str();
+    }
 } // namespace myUtils

@@ -59,6 +59,9 @@ namespace myUtils
 
     std::string getCurrentDateTimeStr();
 
+    // Function to convert seconds into hh::mm::ss format
+    std::string formatTime(const double seconds);
+
     namespace datetools
     {
         namespace details
