@@ -35,8 +35,8 @@
 
 // ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-EventAction::EventAction() : G4UserEventAction() {
-
+EventAction::EventAction() : G4UserEventAction()
+{
 }
 
 // ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -45,29 +45,39 @@ EventAction::~EventAction() = default;
 
 // ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void EventAction::BeginOfEventAction(const G4Event *evt) {
+void EventAction::BeginOfEventAction(const G4Event *evt)
+{
 
     G4TransportationManager::GetTransportationManager()->GetPropagatorInField()->SetLargestAcceptableStep(0.1 * mm);
 
     // initializations
     evtNb++;
-//#ifndef NDEBUG // debug mode
-//
-//    if (evtNb % printModulo == 0) G4cout << "\n---> Begin Of Event: " << evtNb << G4endl;
-//
-//#endif // ifndef NDEBUG
+    // #ifndef NDEBUG // debug mode
+    //
+    //     if (evtNb % printModulo == 0) G4cout << "\n---> Begin Of Event: " << evtNb << G4endl;
+    //
+    // #endif // ifndef NDEBUG
 
     G4int thread_ID = G4Threading::G4GetThreadId();
 
-    //if (thread_ID == 0) {
-        if (evtNb == 1) G4cout << "\n---> Begin Of Event: " << evtNb << G4endl;
-        if (evtNb % printModulo == 0) G4cout << "\n---> Begin Of Event: " << evtNb << G4endl;
+    // if (thread_ID == 0) {
+    if (evtNb == 1)
+    {
+        std::string dt_str = myUtils::getCurrentDateTimeStr();
+        G4cout << "-- " << dt_str << ":---> Begin Of Event: " << evtNb << G4endl;
+    }
+    if (evtNb % printModulo == 0)
+    {
+        std::string dt_str = myUtils::getCurrentDateTimeStr();
+        G4cout << "-- " << dt_str << ":---> Begin Of Event: " << evtNb << G4endl;
+    }
     //}
 }
 
 // ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void EventAction::EndOfEventAction(const G4Event *) {
+void EventAction::EndOfEventAction(const G4Event *)
+{
     //     xgreAnalysis* analysis = xgreAnalysis::getInstance();
     //     if (fTotalEnergyDeposit>5.*keV) analysis->analyseDeposit(fTotalEnergyDeposit);
     //     if (fTotalEnergyDepositPlas>5.*keV) analysis->analyseDepositPlas(fTotalEnergyDepositPlas);

@@ -28,9 +28,11 @@
 #include <DateTime.h>
 #include "GeographicLib/Math.hpp"
 
-namespace myUtils {
+namespace myUtils
+{
 
-    struct vector3D {
+    struct vector3D
+    {
         double u;
         double v;
         double w;
@@ -55,22 +57,28 @@ namespace myUtils {
     long generate_a_unique_ID();
     long generateUniqueRandomLong(); // alternative to generate_a_unique_ID
 
-    namespace datetools {
-        namespace details {
+    std::string getCurrentDateTimeStr();
+
+    namespace datetools
+    {
+        namespace details
+        {
             constexpr unsigned int days_to_month[2][12] =
-                    {
-                            // non-leap year
-                            {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334},
-                            // leap year
-                            {0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335},
-                    };
+                {
+                    // non-leap year
+                    {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334},
+                    // leap year
+                    {0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335},
+            };
         }
 
-        constexpr bool is_leap(int const year) noexcept {
+        constexpr bool is_leap(int const year) noexcept
+        {
             return year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
         }
 
-        constexpr unsigned int day_of_year(int const year, unsigned int const month, unsigned int const day) {
+        constexpr unsigned int day_of_year(int const year, unsigned int const month, unsigned int const day)
+        {
             return details::days_to_month[is_leap(year)][month - 1] + day;
         }
     }

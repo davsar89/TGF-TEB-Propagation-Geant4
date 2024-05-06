@@ -128,12 +128,12 @@ namespace myUtils
         //    std::cout << tle << std::endl; // print for debug
 
         /*
- * calculate satellite position
- */
+         * calculate satellite position
+         */
         Eci eci = sgp4.FindPosition(dt_TGF);
         /*
- * convert satellite position to geodetic coordinates
- */
+         * convert satellite position to geodetic coordinates
+         */
         CoordGeodetic geo = eci.ToGeodetic(); // warning: output latitude and longitude are in radians
 
         geo.latitude = geo.latitude * 180.0 / pii;
@@ -231,7 +231,7 @@ namespace myUtils
         std::cout << output << std::endl;
         return output;
     }
-    
+
     long generateUniqueRandomLong() // alternative to generate_a_unique_ID
     {
         auto now = std::chrono::high_resolution_clock::now();
@@ -243,5 +243,24 @@ namespace myUtils
         std::mt19937 eng(rd());
         std::uniform_int_distribution<long> distr;
         return base ^ distr(eng);
+    }
+
+    std::string getCurrentDateTimeStr()
+    {
+        // Get the current time point from the system clock
+        auto now = std::chrono::system_clock::now();
+
+        // Convert the time point to a time_t object
+        auto time = std::chrono::system_clock::to_time_t(now);
+
+        // Convert time_t to tm as local time
+        std::tm local_tm = *std::localtime(&time);
+
+        // Use stringstream to format date and time
+        std::stringstream ss;
+        ss << std::put_time(&local_tm, "%Y-%m-%d %H:%M:%S");
+
+        // Return the formatted date and time string
+        return ss.str();
     }
 } // namespace myUtils

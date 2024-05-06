@@ -49,6 +49,8 @@ Most of settings can be adjusted in `src/Settings.cc`. In particular:
 - `Settings::BEAMING_TYPE` = TGF beaming type, that is a string that values `"Uniform"` or `"Gaussian"` for isotropic or gaussian distribution
 - `Settings::record_altitude` = record altitude (in km) of the TGF (and secondary electron and positrons), default is 408 km.
 
+- Example run command with valid input parameters (Linux) : `./TGF_Propa 10000000 15 20 -130 0 10 0 Gaussian 408`
+
 ## Program output:
 - Recorded particles are outputed as a list (one by one, line by line) in files located in the `build/output_ascii/`. See `build/README_output.txt` to find which quantity is in which column. The same electron/positron can be recorded several time since it may cross several times the limit altitude (it is the same particle if it has the same random seed and the same ID).
 
