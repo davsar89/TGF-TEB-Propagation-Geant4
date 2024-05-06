@@ -33,7 +33,7 @@
 
 TGF_PhysicsList::TGF_PhysicsList() : G4VUserPhysicsList() {
 
-//    emPhysicsList = new G4EmStandardPhysics_option4_dr(this->settings);
+//    emPhysicsList = new G4EmStandardPhysics_option4_dr(0);
     emPhysicsList = new G4EmStandardPhysics_option1_dr(0);
     emPhysicsList->SetVerboseLevel(0);
 //    this->DumpCutValuesTable();
