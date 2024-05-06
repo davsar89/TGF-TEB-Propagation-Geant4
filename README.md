@@ -7,10 +7,10 @@ contact : <david (dot) sarria (at) uib (dot) no>
 
 ## Generalities
 - Propagation of photons, electrons and positron in Earth's environment (atmosphere, ionosphere, magnetosphere), in the context of Terrestrial Gamma-ray Flashes (TGF) and associated electrons and positrons beams.
-- This code is probably not perfect. Feel free to suggest improvements.
 - Uses mostly Geant4 features. See [documentation](http://geant4-userdoc.web.cern.ch/geant4-userdoc/UsersGuides/ForApplicationDeveloper/html/index.html "Geant4 documentation").
 - Integrates the [NRL-MSISE-00 model](https://ccmc.gsfc.nasa.gov/pub/modelweb/atmospheric/msis/nrlmsise00/) for the atmosphere and the [IGRF-12](http://wdc.kugi.kyoto-u.ac.jp/igrf/index.html) or WMM model for the magnetic field.
 - The coordinate system is set so that the Geant4 X,Y,Z coordinates correspond to the ECEF X,Y,Z coordinates (earth-centered, earth-fixed).
+- This code is probably not perfect. Feel free to suggest improvements.
 
 ## Compilation, installation
 - The source code of `TGF-TEB-Propagation-Geant4` is located in `src/` and the build should be done in the folder `build/`.
