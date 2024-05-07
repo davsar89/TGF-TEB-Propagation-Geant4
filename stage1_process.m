@@ -36,6 +36,8 @@ data = data(type==11 | type==-11 ,:); % remove photons (if any)
 
 type = data(:,7);
 energies = data(:,9);
+times = data(:,8)/1000.0; % us to ms
+
 momentum_x = data(:,17); % normalized momentum i.e. vx^2+vy^2+vz^2 == 1
 momentum_y = data(:,18);
 momentum_z = data(:,19);
@@ -106,6 +108,24 @@ nde_p = N_p./diff(energy_grid);
 histogram('BinEdges',energy_grid,'BinCounts',nde_p,'DisplayStyle','stairs','LineWidth',1.5,'DisplayName',['positrons'],'edgecolor','r');
 legend('show')
 saveas(gcf,'energy_spectrum.png')
+
+% lightcurves
+figure(3)
+time_grid = min(times):1:max(times);
+[lc_e,~] = histcounts(times(type==11 & tk),time_grid);
+[lc_p,~] = histcounts(times(type==-11 & tk),time_grid);
+
+histogram('BinEdges',time_grid,'BinCounts',lc_e,'DisplayStyle','stairs','LineWidth',1.5,'edgecolor','b','DisplayName',['electrons']);
+hold on
+histogram('BinEdges',time_grid,'BinCounts',lc_p,'DisplayStyle','stairs','LineWidth',1.5,'edgecolor','r','DisplayName',['positrons']);
+grid on
+xlabel('time (ms)')
+ylabel('counts per time bin')
+legend('show')
+title('lightcurve')
+axis tight
+saveas(gcf,'lightcurve.png')
+
 
 %%
 function data = better_importdata(filename)
