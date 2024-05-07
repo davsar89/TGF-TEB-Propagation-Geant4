@@ -111,7 +111,7 @@ saveas(gcf,'energy_spectrum.png')
 
 % lightcurves
 figure(3)
-time_grid = min(times):1:max(times);
+time_grid = min(times):0.5:max(times);
 [lc_e,~] = histcounts(times(type==11 & tk),time_grid);
 [lc_p,~] = histcounts(times(type==-11 & tk),time_grid);
 
