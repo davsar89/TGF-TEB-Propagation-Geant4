@@ -8,8 +8,8 @@ import argparse
 import subprocess
 import sys
 
-#BASE_OUTPUT_FILE_NAME = 'detLeptons_';
-BASE_OUTPUT_FILE_NAME = 'detParticles_';
+#BASE_OUTPUT_FILE_NAME = 'detLeptons_'
+BASE_OUTPUT_FILE_NAME = 'detParticles_'
 
 ##
 idx_RAND_SEED = 0
