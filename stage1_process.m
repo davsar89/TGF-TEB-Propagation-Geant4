@@ -120,7 +120,7 @@ hold on
 histogram('BinEdges',time_grid,'BinCounts',lc_p,'DisplayStyle','stairs','LineWidth',1.5,'edgecolor','r','DisplayName',['positrons']);
 grid on
 xlabel('time (ms)')
-ylabel('counts per time bin')
+ylabel('counts per time bin (0.5 ms)')
 legend('show')
 title('lightcurve')
 axis tight
