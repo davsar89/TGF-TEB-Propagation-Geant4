@@ -132,6 +132,8 @@ void Analysis::save_in_output_buffer(
     if (record_or_not)
     {
 
+        const double mom_norm = std::sqrt(mom_x * mom_x + mom_y * mom_y + mom_z * mom_z);
+
         // ASCII OUTPUT
         if (Settings::OUTPUT_TO_ASCII_FILE)
         {
@@ -173,11 +175,11 @@ void Analysis::save_in_output_buffer(
             buffer << ' ';
             buffer << ecef_z;
             buffer << ' ';
-            buffer << mom_x;
+            buffer << mom_x/mom_norm;
             buffer << ' ';
-            buffer << mom_y;
+            buffer << mom_y/mom_norm;
             buffer << ' ';
-            buffer << mom_z;
+            buffer << mom_z/mom_norm;
             buffer << ' ';
             buffer << number_beaming; // 20 // number_beaming == 0 for uniform and 1 for // gaussian
             buffer << ' ';

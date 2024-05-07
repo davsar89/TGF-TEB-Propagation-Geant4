@@ -1,0 +1,24 @@
+{
+  "configurations": [
+    {
+      "name": "Linux",
+      "includePath": [
+        "${workspaceFolder}/**",
+        "/home/david/Desktop/GEANT4/GEANT4-easy-install-scripts-Linux-Mac/geant4/geant4_install_10.07.p03/include/Geant4/**"
+      ],
+      "browse": {
+        "path": [
+          "${workspaceFolder}/**",
+          "/home/david/Desktop/GEANT4/GEANT4-easy-install-scripts-Linux-Mac/geant4/geant4_install_10.07.p03/include/Geant4/**",
+          "/home/david/Desktop/GEANT4/GEANT4-easy-install-scripts-Linux-Mac/geant4/geant4_install_10.07.p03/lib/**"
+        ]
+      },
+      "defines": [],
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "c11",
+      "cppStandard": "c++11",
+      "intelliSenseMode": "gcc-x64"
+    }
+  ],
+  "version": 4
+}
