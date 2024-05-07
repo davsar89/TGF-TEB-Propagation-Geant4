@@ -12,6 +12,16 @@
             "problemMatcher": []
         },
         {
+            "label": "Build Project Release",
+            "type": "shell",
+            "command": "cd ${workspaceFolder}/build && cmake -DCMAKE_BUILD_TYPE=Release ../ && make -j4",
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "problemMatcher": []
+        },
+        {
             "label": "Run Application",
             "type": "shell",
             "command": "cd ${workspaceFolder}/build && ./TGF_Propa",
