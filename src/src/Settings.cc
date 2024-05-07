@@ -6,10 +6,10 @@ namespace Settings {
 
     int NB_EVENT_TOTAL = 1000000;
 
-    double SOURCE_LAT = -7.0492;  // degree
-    double SOURCE_LONG = 55.9129; // degree
+    double SOURCE_LAT = -13.1300;  // degree
+    double SOURCE_LONG = 31.9300; // degree
     double SOURCE_ALT = 15.;    // km
-    double record_altitude = 408.0;
+    double record_altitude = 541.0;
 
     double SOURCE_OPENING_ANGLE = 30.; // degree
     G4String BEAMING_TYPE = "Gaussian";

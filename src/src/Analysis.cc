@@ -75,7 +75,9 @@ Analysis::Analysis()
                                      std::to_string(int(Settings::SOURCE_ALT)) + "_" +
                                      std::to_string(int(Settings::SOURCE_OPENING_ANGLE)) + "_" +
                                      Settings::BEAMING_TYPE + "_" +
-                                     std::to_string(int(Settings::SOURCE_SIGMA_TIME)) + "/";
+                                     std::to_string(int(Settings::SOURCE_SIGMA_TIME)) + "_" +
+                                     std::to_string(int(Settings::SOURCE_LAT)) + "_" +
+                                     std::to_string(int(Settings::SOURCE_LONG)) + "/";
 
     createDirectory(output_folder_name);
 

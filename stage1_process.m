@@ -51,7 +51,7 @@ nb_p = sum(type==-11);
 
 positrons_electron_ratio = nb_p / (nb_e + nb_p);
 
-disp(['positrons-to-electron ratio : ' num2str(positrons_electron_ratio)])
+disp(['positrons-to-electrons ratio : ' num2str(positrons_electron_ratio)])
 
 figure(1) % plot on map
 % electrons

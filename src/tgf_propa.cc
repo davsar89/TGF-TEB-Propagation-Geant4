@@ -106,6 +106,8 @@ int main(int argc, char **argv)
 
     Settings::RAND_SEED = seeds[0];
 
+    Analysis& analysis = Analysis::getInstance();
+
     auto *runManager = new G4RunManager;
 
     //
