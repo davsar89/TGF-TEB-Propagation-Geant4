@@ -25,8 +25,12 @@ event_nb = data(:,5);
 
 nb_sampled_initial_source = get_nb_photons_sampled_total(seeds,event_nb);
 
+SOURCE_TGF_ALT = unique(data(:,10));
+
+disp(['Number electrons/positrons recorded at ' num2str(SOURCE_TGF_ALT) ' km altitude : ' num2str(length(seeds))])
 disp(['Number of initialy sampled TGF photons : ' num2str(nb_sampled_initial_source)])
 
+SOURCE_TGF_ALT = unique(data(:,2));
 SOURCE_TGF_LAT = unique(data(:,21));
 SOURCE_TGF_LONG = unique(data(:,22));
 
