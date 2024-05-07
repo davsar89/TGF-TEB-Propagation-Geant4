@@ -8,7 +8,7 @@
             "program": "${workspaceFolder}/build/TGF_Propa",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
+            "cwd": "${workspaceFolder}/build",
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
