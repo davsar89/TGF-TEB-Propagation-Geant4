@@ -5,7 +5,36 @@ import glob
 import numpy as np
 # import matplotlib.pyplot as plt
 import argparse
+import subprocess
+import sys
 
+#BASE_OUTPUT_FILE_NAME = 'detLeptons_';
+BASE_OUTPUT_FILE_NAME = 'detParticles_';
+
+##
+idx_RAND_SEED = 0
+idx_SOURCE_ALT = 1
+idx_SOURCE_OPENING_ANGLE = 2
+idx_TILT_ANGLE = 3
+idx_event_nb = 4
+idx_ID = 5
+idx_PDG_NB = 6
+idx_time = 7
+idx_energy = 8
+idx_alt = 9
+idx_lat = 10
+idx_lon = 11
+idx_dist_rad = 12
+idx_ecef_x = 13
+idx_ecef_y = 14
+idx_ecef_z = 15
+idx_mom_x = 16
+idx_mom_y = 17
+idx_mom_z = 18
+idx_number_beaming = 19
+idx_SOURCE_LAT = 20
+idx_SOURCE_LONG = 21
+##
 
 class SimData:
 	ph = {}
@@ -39,28 +68,28 @@ def _organize_data(data_array, selection):
 
 	particle_map = {'ph':22, 'e-':11, 'e+':-11}
 
-	seed = np.asarray(data_array[0], dtype=int)            # random number seed of the run
-	src_lat = np.asarray(data_array[1], dtype=float)       # deg
-	src_lon = np.asarray(data_array[2], dtype=float)       # deg
-	src_alt = np.asarray(data_array[3], dtype=float)       # km
-	beam_dist = np.asarray(data_array[4], dtype=str)       # 1 = Gaussian | 0 = Uniform
-	beam_open = np.asarray(data_array[5], dtype=float)     # deg: Gaussian = sigma | Uniform = half-cone
-	beam_tilt = np.asarray(data_array[6], dtype=float)     # deg
-	num_ph_sampled = np.asarray(data_array[7], dtype=int)  # number of TGF photons sampled when record is made
-	creation_type = np.asarray(data_array[8], dtype=int)   # 1 = primary | >1 = secondary
-	particle_type = np.asarray(data_array[9], dtype=int)   # 22 = ph | 11 = e- | -11 = e
-	time = np.asarray(data_array[10], dtype=float)         # microsec wrt TGF photon sampling time
-	energy = np.asarray(data_array[11], dtype=float)       # keV
-	lat = np.asarray(data_array[12], dtype=float)          # deg
-	lon = np.asarray(data_array[13], dtype=float)          # deg
-	alt = np.asarray(data_array[14], dtype=float)          # km
-	dist = np.asarray(data_array[15], dtype=float)         # km: distance wrt TGF source position
-	pos_x = np.asarray(data_array[16], dtype=float)        # position x-coord
-	pos_y = np.asarray(data_array[17], dtype=float)        # position y-coord
-	pos_z = np.asarray(data_array[18], dtype=float)        # position z-coord
-	mom_x = np.asarray(data_array[19], dtype=float)        # momentum x-coord
-	mom_y = np.asarray(data_array[20], dtype=float)        # momentum y-coord
-	mom_z = np.asarray(data_array[21], dtype=float)        # momentum z-coord
+	seed = np.asarray(data_array[idx_RAND_SEED], dtype=int)            # random number seed of the run
+	src_lat = np.asarray(data_array[idx_SOURCE_LAT], dtype=float)       # deg
+	src_lon = np.asarray(data_array[idx_SOURCE_LONG], dtype=float)       # deg
+	src_alt = np.asarray(data_array[idx_SOURCE_ALT], dtype=float)       # km
+	beam_dist = np.asarray(data_array[idx_number_beaming], dtype=str)       # 1 = Gaussian | 0 = Uniform
+	beam_open = np.asarray(data_array[idx_SOURCE_OPENING_ANGLE], dtype=float)     # deg: Gaussian = sigma | Uniform = half-cone theta
+	beam_tilt = np.asarray(data_array[idx_TILT_ANGLE], dtype=float)     # deg
+	num_ph_sampled = np.asarray(data_array[idx_event_nb], dtype=int)  # number of TGF photons sampled when record is made
+	creation_type = np.asarray(data_array[idx_ID], dtype=int)   # 1 = primary | >1 = secondary
+	particle_type = np.asarray(data_array[idx_PDG_NB], dtype=int)   # 22 = ph | 11 = e- | -11 = e
+	time = np.asarray(data_array[idx_time], dtype=float)         # microsec wrt TGF photon sampling time
+	energy = np.asarray(data_array[idx_energy], dtype=float)       # keV
+	lat = np.asarray(data_array[idx_lat], dtype=float)          # deg
+	lon = np.asarray(data_array[idx_lon], dtype=float)          # deg
+	alt = np.asarray(data_array[idx_alt], dtype=float)          # km
+	dist = np.asarray(data_array[idx_dist_rad], dtype=float)         # km: distance wrt TGF source position
+	pos_x = np.asarray(data_array[idx_ecef_x], dtype=float)        # position x-coord
+	pos_y = np.asarray(data_array[idx_ecef_y], dtype=float)        # position y-coord
+	pos_z = np.asarray(data_array[idx_ecef_z], dtype=float)        # position z-coord
+	mom_x = np.asarray(data_array[idx_mom_x], dtype=float)        # momentum x-coord
+	mom_y = np.asarray(data_array[idx_mom_y], dtype=float)        # momentum y-coord
+	mom_z = np.asarray(data_array[idx_mom_z], dtype=float)        # momentum z-coord
 
 	beam_dist[beam_dist=='0'] = 'uniform'
 	beam_dist[beam_dist=='1'] = 'gaussian'
@@ -94,22 +123,24 @@ def _organize_data(data_array, selection):
 	return data_dict
 
 def write_file(filename, string):
-	file = open(filename, 'a+')
+	file = open(filename, 'w+')
 	file.write(string)
 	file.close()
+	print(f"Finished writing {filename}.")
 	return
-
-
 
 def run(args):
 
 	## make output directory (if neccessary)
 	os.makedirs(args.outDir, exist_ok=True)
 
-	## input file names
-	ph_file = glob.glob(os.path.join(args.inDir, 'detPhotons*.out'))[0]
-	lep_file = glob.glob(os.path.join(args.inDir, 'detLeptons*.out'))[0]
+	## input file name
+	command0 = f'rm -rf {args.inDir}/fused.out'
+	subprocess.run(command0, shell=True, check=True)
+	command = f'cat {args.inDir}/*.out > {args.inDir}/fused.out'
+	subprocess.run(command, shell=True, check=True)
 
+	concatenated_file = glob.glob(os.path.join(args.inDir, f'fused.out'))[0]
 
 	## output file names
 	elec_posi_ratio_filename = os.path.join(args.outDir, 'elec_posi_ratio.txt')
@@ -119,74 +150,70 @@ def run(args):
 	elec_ener_spec_filename = os.path.join(args.outDir, 'electrons_spec.txt')
 	posi_ener_spec_filename = os.path.join(args.outDir, 'positrons_spec.txt')
 
-	spec_plot_filename = os.path.join(args.outDir, 'spectra.png')
-
 	## collect data
 	data = SimData()
-	data.ph = read_Geant4_output(ph_file, 'ph')
-	data.elec = read_Geant4_output(lep_file, 'e+')
-	data.posi = read_Geant4_output(lep_file, 'e-')
+	if not args.ignore_photons:
+		data.ph = read_Geant4_output(concatenated_file, 'ph')
+	data.elec = read_Geant4_output(concatenated_file, 'e-')
+	data.posi = read_Geant4_output(concatenated_file, 'e+')
 
 	## electron-positron ratio ##
 
-	elec_posi_ratio = '{:.3e}'.format(len(data.posi['particle_type'])/len(data.elec['particle_type']))
+	ep_r = len(data.posi['particle_type']) / (len(data.elec['particle_type']) + len(data.posi['particle_type']))
+	elec_posi_ratio = "{:.5e}".format(ep_r)
 	write_file(elec_posi_ratio_filename, elec_posi_ratio)
 
 	## energy & momentum ##
 
-	elec_ener_mom = ''
+	elec_ener_mom_str = ''
 	for i in range(data.elec['energy'].size):
-		elec_ener_mom += '{} {} {} {}\n'.format(data.elec['energy'][i], data.elec['mom_x'][i], data.elec['mom_y'][i], data.elec['mom_z'][i])
-	write_file(elec_ener_mom_filename, elec_ener_mom)
+		elec_ener_mom_str += '{:.5e} {:.5e} {:.5e} {:.5e}\n'.format(data.elec['energy'][i], data.elec['mom_x'][i], data.elec['mom_y'][i], data.elec['mom_z'][i])
+	write_file(elec_ener_mom_filename, elec_ener_mom_str)
 
-	posi_ener_mom = ''
+	posi_ener_mom_str = ''
 	for i in range(data.posi['energy'].size):
-		posi_ener_mom += '{} {} {} {}\n'.format(data.posi['energy'][i], data.posi['mom_x'][i], data.posi['mom_y'][i], data.posi['mom_z'][i])
-	write_file(posi_ener_mom_filename, posi_ener_mom)
+		posi_ener_mom_str += '{:.5e} {:.5e} {:.5e} {:.5e}\n'.format(data.posi['energy'][i], data.posi['mom_x'][i], data.posi['mom_y'][i], data.posi['mom_z'][i])
+	write_file(posi_ener_mom_filename, posi_ener_mom_str)
 
 	## spectra ##
 
 	## log-space BGO energy bins
 	energy_bins = np.logspace(np.log10(200), np.log10(40_000), num=129)
 	## returns index value of bin that that value corresponds to [indexing starts at 1]
-	ph_index = np.digitize(data.ph['energy'], energy_bins, right=True)
-	elec_index = np.digitize(data.elec['energy'], energy_bins, right=True)
-	posi_index = np.digitize(data.posi['energy'], energy_bins, right=True)
-	## counts per bin 
-	ph_cnts_per_bin = np.zeros(128)
-	elec_cnts_per_bin = np.zeros(128)
-	posi_cnts_per_bin = np.zeros(128)
-	for index in ph_index:
-		ph_cnts_per_bin[index-1] += 1
-	for index in elec_index:
-		elec_cnts_per_bin[index-1] += 1
-	for index in posi_index:
-		posi_cnts_per_bin[index-1] += 1
-	## dnde
-	ph_dnde = ph_cnts_per_bin/(energy_bins[1:]-energy_bins[:-1])
-	elec_dnde = elec_cnts_per_bin/(energy_bins[1:]-energy_bins[:-1])
-	posi_dnde = posi_cnts_per_bin/(energy_bins[1:]-energy_bins[:-1])
-	## normalize
-	ph_dnde = ph_dnde/np.mean(ph_dnde)
-	elec_dnde = elec_dnde/np.mean(elec_dnde)
-	posi_dnde = posi_dnde/np.mean(posi_dnde)
+	
+	# Calculate histograms
+	if not args.ignore_photons:
+		ph_hist, bin_edges = np.histogram(data.ph['energy'], bins=energy_bins)
+	elec_hist, bin_edges = np.histogram(data.elec['energy'], bins=energy_bins)
+	posi_hist, bin_edges = np.histogram(data.posi['energy'], bins=energy_bins)
 
-	ph_ener_spec = ''
-	for i in range(ph_dnde.size):
-		ph_ener_spec += '{:.3f} {:.5f}\n'.format(energy_bins[:-1][i], ph_dnde[i])
-	write_file(ph_ener_spec_filename, ph_ener_spec)
+	# Calculate bin widths
+	bin_widths = np.diff(bin_edges)
 
-	elec_ener_spec = ''
-	for i in range(elec_dnde.size):
-		elec_ener_spec += '{:.3f} {:.5f}\n'.format(energy_bins[:-1][i], elec_dnde[i])
-	write_file(elec_ener_spec_filename, elec_ener_spec)
+	# Normalize by the bin size to get a probability density function
+	if not args.ignore_photons:
+		ph_pdf = ph_hist / (sum(ph_hist) * bin_widths)
+	elec_pdf = elec_hist / (sum(elec_hist) * bin_widths)
+	posi_pdf = posi_hist / (sum(posi_hist) * bin_widths)
 
-	posi_ener_spec = ''
-	for i in range(posi_dnde.size):
-		posi_ener_spec += '{:.3f} {:.5f}\n'.format(energy_bins[:-1][i], posi_dnde[i])
-	write_file(posi_ener_spec_filename, posi_ener_spec)
+	if not args.ignore_photons:
+		ph_ener_spec_str = '{:.5e} {:.5e}\n'.format(energy_bins[0], 0)
+		for i in range(ph_pdf.size):
+			ph_ener_spec_str += '{:.5e} {:.5e}\n'.format(energy_bins[i+1], ph_pdf[i])
+		write_file(ph_ener_spec_filename, ph_ener_spec_str)
 
-	## plot
+	elec_ener_spec_str = '{:.5e} {:.5e}\n'.format(energy_bins[0], 0)
+	for i in range(elec_pdf.size):
+		elec_ener_spec_str += '{:.5e} {:.5e}\n'.format(energy_bins[i+1], elec_pdf[i])
+	write_file(elec_ener_spec_filename, elec_ener_spec_str)
+
+	posi_ener_spec_str = '{:.5e} {:.5e}\n'.format(energy_bins[0], 0)
+	for i in range(posi_pdf.size):
+		posi_ener_spec_str += '{:.5e} {:.5e}\n'.format(energy_bins[i+1], posi_pdf[i])
+	write_file(posi_ener_spec_filename, posi_ener_spec_str)
+
+	## plot spectra
+	# spec_plot_filename = os.path.join(args.outDir, 'spectra.png')
 	# plt.step(energy_bins[:-1], ph_dnde, label='ph')
 	# plt.step(energy_bins[:-1], elec_dnde, label='e-')
 	# plt.step(energy_bins[:-1], posi_dnde, label='e+')
@@ -197,21 +224,25 @@ def run(args):
 	# plt.legend()
 	# plt.savefig(spec_plot_filename)
 
-
-
-
-
 if __name__ == '__main__':
 
 	parser = argparse.ArgumentParser()
-	parser.add_argument('tgf_id', type=str)
+	parser.add_argument('--tgf_id', type=int, default=99999, help='Optional argument with a default value')
 	args = parser.parse_args()
 
-	args.inDir = '.'
+	if args.tgf_id == 99999:
+		print(f'Warning: Using the default value for --tgf_id = {args.tgf_id}', file=sys.stderr)
+	else:
+		print(f'Using --tgf_id = {args.tgf_id}')
+
+	args.inDir = './input/'
 #	args.inDir = './TGF-TEB-Propagation-Geant4_subfolders/build/output_ascii/541_15_30_Gaussian_0'
 #	args.outDir = './TEB_MASS_MODEL_RESPONSE_SL_edit/build/input/'+args.tgf_id+'/'
-	args.outDir = '.'
+	args.outDir = './output/'
+	args.ignore_photons = True
 	run(args)
+
+	print("Done processing.")
 
 
 

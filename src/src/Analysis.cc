@@ -147,7 +147,7 @@ void Analysis::save_in_output_buffer(
             //   asciiFile << ' ';
             buffer << Settings::RAND_SEED;
             buffer << ' ';
-            buffer << Settings::SOURCE_ALT;
+            buffer << Settings::SOURCE_ALT; // 2
             buffer << ' ';
             buffer << Settings::SOURCE_OPENING_ANGLE;
             buffer << ' ';
@@ -159,7 +159,7 @@ void Analysis::save_in_output_buffer(
             buffer << ' ';
             buffer << PDG_NB;
             buffer << ' ';
-            buffer << time;
+            buffer << time; // 8
             buffer << ' ';
             buffer << energy;
             buffer << ' ';

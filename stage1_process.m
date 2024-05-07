@@ -149,7 +149,7 @@ data=[C{:}];
 
 end
 
-%% find latitude separation between the thow hemispheres of the TEB (somethimes it is not simply 0)
+%% find latitude separation between the two hemispheres of the TEB (somethimes it is not simply 0)
 function middle_x = find_separation_latitude(x)
 
 % Sort the x data
