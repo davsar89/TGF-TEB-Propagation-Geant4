@@ -73,6 +73,7 @@ class satellite_coordinates:
                  TLE_line_2 : second line of TLE at given 'datetimes' date
         """
 
+
         TLE_line_1 = []
         TLE_line_2 = []
         datetimes = []
@@ -116,9 +117,9 @@ class satellite_coordinates:
 
     def get_satellite_coordinates(self, input_datetime):
         """
-    Returns the longitude (deg), latitude (deg), altitude (km) of a satellite at a given time
+    Calculates the longitude (deg), latitude (deg), altitude (km) and velocity vector (normalized) of a satellite at a given time
         :param input_datetime: python datetime structure identifying the time where the coordinates of the satellite is wanted
-        :return: longitude (deg), latitude (deg), altitude (km)
+        :return: longitude (deg), latitude (deg), altitude (km), velocity vector (normalized)
         """
 
         # input_datetime = datetime.datetime(year=2018, month=9, day=16, hour=13,minute=15,second=40)
@@ -149,7 +150,7 @@ class satellite_coordinates:
         position, velocity, error = satellite.ITRF_position_velocity_error(tttt)
         au_to_Km = 149597870.700
 
-        v_vec_itrf = velocity / math.sqrt(velocity[0]**2 + velocity[1]**2 + velocity[2]**2)
+        v_vec_itrf = velocity / math.sqrt(velocity[0]**2 + velocity[1]**2 + velocity[2]**2) # unit vector
 
         position = np.asarray(position) * au_to_Km * 1000.0    # to meters
 
