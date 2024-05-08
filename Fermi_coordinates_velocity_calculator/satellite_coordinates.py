@@ -50,8 +50,8 @@ class satellite_coordinates:
 
         self.ts = api.load.timescale()
 
-        self.ecef = pyproj.Proj(proj='geocent', ellps='GRS80')
-        self.lla = pyproj.Proj(proj='latlong', ellps='GRS80')
+        self.ecef = pyproj.Proj(proj='geocent', ellps='WGS84')
+        self.lla = pyproj.Proj(proj='latlong', ellps='WGS84')
 
     ##
 
