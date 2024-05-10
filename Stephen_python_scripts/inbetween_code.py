@@ -6,6 +6,7 @@ import numpy as np
 # import matplotlib.pyplot as plt
 import argparse
 import subprocess
+import copy
 import sys
 
 #BASE_OUTPUT_FILE_NAME = 'detLeptons_'
@@ -63,6 +64,17 @@ def read_Geant4_output(filename, particle_type):
 
 	return data_dict
 
+def get_separator_lat(lat_array):
+	# Sort the data
+	xx = copy.deepcopy(lat_array)
+	lat_sorted = np.sort(xx)
+	# Find gaps in the sorted data
+	gaps = np.diff(lat_sorted)
+	# Find the index of the largest gap
+	index = np.argmax(gaps)
+	# Calculate the middle x value between the largest gap
+	middle_x = (lat_sorted[index] + lat_sorted[index + 1]) / 2
+	return middle_x
 
 def _organize_data(data_array, selection):
 
@@ -94,31 +106,33 @@ def _organize_data(data_array, selection):
 	beam_dist[beam_dist=='0'] = 'uniform'
 	beam_dist[beam_dist=='1'] = 'gaussian'
 
-	index = np.where(particle_type==particle_map[selection])[0]
+	separator_lat = get_separator_lat(lat)
+
+	kept_indices = np.where((particle_type==particle_map[selection]) & (lat>separator_lat))[0]
 
 	data_dict = {}
-	data_dict['seed'] = seed[index]
-	data_dict['src_lat'] = src_lat[index]
-	data_dict['src_lon'] = src_lon[index]
-	data_dict['src_alt'] = src_alt[index]
-	data_dict['beam_dist'] = beam_dist[index]
-	data_dict['beam_open'] = beam_open[index]
-	data_dict['beam_tilt'] = beam_tilt[index]
-	data_dict['num_ph_sampled'] = num_ph_sampled[index]
-	data_dict['creation_type'] = creation_type[index]
-	data_dict['particle_type'] = particle_type[index]
-	data_dict['time'] = time[index]
-	data_dict['energy'] = energy[index]
-	data_dict['lat'] = lat[index]
-	data_dict['lon'] = lon[index]
-	data_dict['alt'] = alt[index]
-	data_dict['dist'] = dist[index]
-	data_dict['pos_x'] = pos_x[index]
-	data_dict['pos_y'] = pos_y[index]
-	data_dict['pos_z'] = pos_z[index]
-	data_dict['mom_x'] = mom_x[index]
-	data_dict['mom_y'] = mom_y[index]
-	data_dict['mom_z'] = mom_z[index]
+	data_dict['seed'] = seed[kept_indices]
+	data_dict['src_lat'] = src_lat[kept_indices]
+	data_dict['src_lon'] = src_lon[kept_indices]
+	data_dict['src_alt'] = src_alt[kept_indices]
+	data_dict['beam_dist'] = beam_dist[kept_indices]
+	data_dict['beam_open'] = beam_open[kept_indices]
+	data_dict['beam_tilt'] = beam_tilt[kept_indices]
+	data_dict['num_ph_sampled'] = num_ph_sampled[kept_indices]
+	data_dict['creation_type'] = creation_type[kept_indices]
+	data_dict['particle_type'] = particle_type[kept_indices]
+	data_dict['time'] = time[kept_indices]
+	data_dict['energy'] = energy[kept_indices]
+	data_dict['lat'] = lat[kept_indices]
+	data_dict['lon'] = lon[kept_indices]
+	data_dict['alt'] = alt[kept_indices]
+	data_dict['dist'] = dist[kept_indices]
+	data_dict['pos_x'] = pos_x[kept_indices]
+	data_dict['pos_y'] = pos_y[kept_indices]
+	data_dict['pos_z'] = pos_z[kept_indices]
+	data_dict['mom_x'] = mom_x[kept_indices]
+	data_dict['mom_y'] = mom_y[kept_indices]
+	data_dict['mom_z'] = mom_z[kept_indices]
 
 	return data_dict
 
