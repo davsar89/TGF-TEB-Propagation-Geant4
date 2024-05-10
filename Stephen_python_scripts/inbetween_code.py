@@ -12,6 +12,8 @@ import sys
 #BASE_OUTPUT_FILE_NAME = 'detLeptons_'
 BASE_OUTPUT_FILE_NAME = 'detParticles_'
 
+SELECTED_HEMISPHERE = 'UPPER' # UPPER OR LOWER
+
 ##
 idx_RAND_SEED = 0
 idx_SOURCE_ALT = 1
@@ -108,7 +110,15 @@ def _organize_data(data_array, selection):
 
 	separator_lat = get_separator_lat(lat)
 
-	kept_indices = np.where((particle_type==particle_map[selection]) & (lat>separator_lat))[0]
+	if SELECTED_HEMISPHERE=='LOWER':
+		idx_lat_kept = (lat<separator_lat)
+	elif SELECTED_HEMISPHERE=='UPPER':
+		idx_lat_kept = (lat>separator_lat)
+	else:
+		print('Error: SELECTED_HEMISPHERE must be LOWER or UPPER. Aborting')
+		sys.out()
+
+	kept_indices = np.where((particle_type==particle_map[selection]) & (idx_lat_kept))[0]
 
 	data_dict = {}
 	data_dict['seed'] = seed[kept_indices]
