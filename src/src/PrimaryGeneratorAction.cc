@@ -219,7 +219,7 @@ double PrimaryGeneratorAction::BrokenPL(double &p1, double &p2, double &ec, doub
 double PrimaryGeneratorAction::Sample_one_RREA_gammaray_energy(const double &MinEner, const double &MaxEner, const double &cut_ener)
 {
     // random samples the energy of one RREA gamma ray
-    // RREEA gamma spectrum is approximately = 1/E * exp (-E / 7.3MeV)
+    // "classical" fully developped RREA gamma spectrum is approximately = 1/E * exp (-E / 7.3MeV)
     // (rejection method)
 
     auto RREA_spec = [&cut_ener](const double x)
