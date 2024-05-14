@@ -37,7 +37,8 @@ using namespace std;
 // ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 PrimaryGeneratorAction::PrimaryGeneratorAction()
-        : G4VUserPrimaryGeneratorAction(), fParticleGun(nullptr) {
+    : G4VUserPrimaryGeneratorAction(), fParticleGun(nullptr)
+{
 
     fParticleGun = new G4ParticleGun(nofParticles);
 
@@ -46,26 +47,27 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
     fParticleGun->SetParticleDefinition(particle);
 
     earth = new GeographicLib::Geocentric(GeographicLib::Constants::WGS84_a(), GeographicLib::Constants::WGS84_f());
-
 }
 
 // ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PrimaryGeneratorAction::~PrimaryGeneratorAction() {
+PrimaryGeneratorAction::~PrimaryGeneratorAction()
+{
     delete fParticleGun;
     delete earth;
 }
 
 // ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent) {
+void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
+{
     // this function is called at the begining of event
     // 1/E
     //     G4double energy=MinEner*(pow(((MaxEner)/(MinEner)),G4UniformRand()))
     ////////////// ENERGY /////////////////
     // 1/E * exp (-E / 7.3MeV) (rejection method)
-    G4double MaxEner = 40. * MeV; // Max energy
-    G4double MinEner = 10. * keV; // Min energy
+    G4double MaxEner = 40. * MeV;  // Max energy
+    G4double MinEner = 10. * keV;  // Min energy
     G4double cut_ener = 7.3 * MeV; // exponential cut-off factor
     G4double energy = Sample_one_RREA_gammaray_energy(MinEner, MaxEner, cut_ener);
     ////////////// POSITION / ANGLE /////////////////
@@ -80,11 +82,13 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent) {
     G4double R_try;
     G4double sigma_sample_R;
 
-    if ((Settings::BEAMING_TYPE == "Uniform") || (Settings::BEAMING_TYPE == "uniform")) {
+    if ((Settings::BEAMING_TYPE == "Uniform") || (Settings::BEAMING_TYPE == "uniform"))
+    {
         R_max = std::tan(Settings::SOURCE_OPENING_ANGLE * degree);
         R_try = R_max + 10.; // just for initialization
 
-        while (R_try > R_max) {
+        while (R_try > R_max)
+        {
             X_try = 2. * (G4UniformRand() - 0.5) * R_max;
             Y_try = 2. * (G4UniformRand() - 0.5) * R_max;
             R_try = sqrt(X_try * X_try + Y_try * Y_try);
@@ -92,19 +96,24 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent) {
 
         //         theta = std::acos(1. - G4UniformRand()*(1. - std::cos(Settings::OpeningAngle() * degree))); // uniform over spherical(i.e a part of
         // sphere) area
-    } else if ((Settings::BEAMING_TYPE == "Gaussian") || (Settings::BEAMING_TYPE == "gaussian") ||
-               (Settings::BEAMING_TYPE == "normal") || (Settings::BEAMING_TYPE == "Normal")) {
-        R_max = 10000.;      // -> maximum angle is atan(10000) = 89.9943 degrees
+    }
+    else if ((Settings::BEAMING_TYPE == "Gaussian") || (Settings::BEAMING_TYPE == "gaussian") ||
+             (Settings::BEAMING_TYPE == "normal") || (Settings::BEAMING_TYPE == "Normal"))
+    {
+        R_max = 10000.; // -> maximum angle is atan(10000) = 89.9943 degrees
         sigma_sample_R = std::tan(Settings::SOURCE_OPENING_ANGLE * degree);
         R_try = R_max + 10.; // just for initialization
 
-        while (R_try > R_max) {
+        while (R_try > R_max)
+        {
             X_try = CLHEP::RandGauss::shoot(0., sigma_sample_R); // gaussian position sample
             Y_try = CLHEP::RandGauss::shoot(0., sigma_sample_R); // gaussian position sample
             R_try = sqrt(X_try * X_try + Y_try * Y_try);
             //  G4cout << X_try << G4endl;
         }
-    } else {
+    }
+    else
+    {
         G4cout << "ERROR : Beaming type is not Gaussian or Uniform. Aborting." << G4endl;
         std::abort();
     }
@@ -116,7 +125,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent) {
 
     earth->Forward(lat, lon, alt, ecef_x, ecef_y, ecef_z);
 
-//    geod_conv::GeodeticConverter::geodetic2ecef(lat, lon, alt, ecef_x, ecef_y, ecef_z);
+    //    geod_conv::GeodeticConverter::geodetic2ecef(lat, lon, alt, ecef_x, ecef_y, ecef_z);
 
     G4ThreeVector position;
     position.setX(ecef_x * m);
@@ -141,9 +150,10 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent) {
     localVertical_perp2 = G4ThreeVector(wx, wy, wz);
 
     // adding tilt angle and recomputing the two perpendicular vectors
-    if (Settings::TILT_ANGLE != 0.0) {
+    if (Settings::TILT_ANGLE != 0.0)
+    {
         G4ThreeVector tilt_shift =
-                localVertical_perp1 * std::sin(Settings::TILT_ANGLE * degree); // we could also use localVertical_perp2
+            localVertical_perp1 * std::sin(Settings::TILT_ANGLE * degree); // we could also use localVertical_perp2
         localVertical = localVertical + tilt_shift;
         localVertical = position / position.mag();
         ux = localVertical[0];
@@ -169,9 +179,12 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent) {
     ////////////// TIME /////////////////
     G4double time;
 
-    if (Settings::SOURCE_SIGMA_TIME == 0.) {
+    if (Settings::SOURCE_SIGMA_TIME == 0.)
+    {
         time = 0.;
-    } else {
+    }
+    else
+    {
         time = CLHEP::RandGauss::shoot(0., Settings::SOURCE_SIGMA_TIME) * microsecond;
     }
 
@@ -185,12 +198,16 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent) {
 
 // ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-double PrimaryGeneratorAction::BrokenPL(double &p1, double &p2, double &ec, double &x) {
+double PrimaryGeneratorAction::BrokenPL(double &p1, double &p2, double &ec, double &x)
+{
     double broken_PL = 0;
 
-    if (x < ec) {
+    if (x < ec)
+    {
         broken_PL = std::pow(x, p1);
-    } else if (x >= ec) {
+    }
+    else if (x >= ec)
+    {
         broken_PL = std::pow(ec, p1 - p2) * std::pow(x, p2);
     }
 
@@ -199,26 +216,60 @@ double PrimaryGeneratorAction::BrokenPL(double &p1, double &p2, double &ec, doub
 
 // ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4double
-PrimaryGeneratorAction::Sample_one_RREA_gammaray_energy(G4double &MinEner, G4double &MaxEner, G4double &cut_ener) {
+double PrimaryGeneratorAction::Sample_one_RREA_gammaray_energy(const double &MinEner, const double &MaxEner, const double &cut_ener)
+{
     // random samples the energy of one RREA gamma ray
     // RREEA gamma spectrum is approximately = 1/E * exp (-E / 7.3MeV)
-    //     G4double energy=MinEner*(pow(((MaxEner)/(MinEner)),G4UniformRand())); // code for sampling 1/E
     // (rejection method)
-    G4double H = cut_ener;
-    G4double pMax = 1. / MinEner * exp(-MinEner / H);
-    G4double pMin = 1. / MaxEner * exp(-MaxEner / H);
-    G4double pOfeRand = 0.0;
-    G4double pRand = 1.0;
-    G4double eRand = 0.0;
 
-    while (pOfeRand < pRand) { // rejection
+    auto RREA_spec = [&cut_ener](const double x)
+    {
+        return 1.0 / x * exp(-x / cut_ener);
+    };
+
+    const double pMax = RREA_spec(MinEner) * 1.01;
+    const double pMin = RREA_spec(MaxEner);
+    double pOfeRand = 0.0;
+    double pRand = 1.0;
+    double eRand = 0.0;
+
+    while (pOfeRand < pRand)
+    { // rejection
         pRand = pMin + (pMax - pMin) * G4UniformRand();
         eRand = MinEner + (MaxEner - MinEner) * G4UniformRand();
-        pOfeRand = 1.0 / eRand * exp(-eRand / H);
+        pOfeRand = RREA_spec(eRand);
     }
 
     return eRand;
 }
 
 // ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+double PrimaryGeneratorAction::Sample_one_BowersFormula_gammaray_energy(const double &MinEner, const double &MaxEner)
+{
+    // Sample Bowers et al. 2018 formula for reverse positron beam TGF (much harder than classical TGF)
+    // (rejection method)
+
+    const double E0 = 100 * CLHEP::MeV;
+    const double power = 0.85;
+
+    auto Bowers_spec = [&E0, &power](const double E)
+    {
+        return 1.0 / E * exp(-E0 / (std::pow(E0, power) - std::pow(E, power)));
+    };
+
+    const double pMax = Bowers_spec(MinEner) * 1.01;
+    const double pMin = Bowers_spec(MaxEner);
+    double pOfeRand = 0.0;
+    double pRand = 1.0;
+    double eRand = 0.0;
+
+    while (pOfeRand < pRand)
+    { // rejection
+        pRand = pMin + (pMax - pMin) * G4UniformRand();
+        eRand = MinEner + (MaxEner - MinEner) * G4UniformRand();
+        pOfeRand = Bowers_spec(eRand);
+    }
+
+    return eRand;
+}

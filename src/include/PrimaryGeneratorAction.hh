@@ -46,7 +46,9 @@ class G4Event;
 class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
 public:
 
-    G4double Sample_one_RREA_gammaray_energy(G4double &MinEner, G4double &MaxEner, G4double &cut_ener);
+    double Sample_one_RREA_gammaray_energy(const double &MinEner, const double &MaxEner, const double &cut_ener);
+
+    double Sample_one_BowersFormula_gammaray_energy(const double &MinEner, const double &MaxEner);
 
     double BrokenPL(double &p1, double &p2, double &ec, double &x);
 
