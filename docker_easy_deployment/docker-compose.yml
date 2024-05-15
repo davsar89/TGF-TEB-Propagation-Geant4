@@ -39,6 +39,6 @@ services:
       && cmake ../
       && make -j4
       && ls
-      && ./TGF_Propa 10000000 15 20 -130 0 10 0 Gaussian 408
+      && ./TGF_Propa 10000000 15 20 -130 0 10 0 Gaussian 408 0
       "
       
