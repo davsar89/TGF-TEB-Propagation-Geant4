@@ -40,7 +40,7 @@ namespace Settings {
     G4bool OUTPUT_TO_ASCII_FILE = true;
 
     G4String MAGNETIC_FIELD_MODEL = "IGRF"; // "WMM" or "IGRF" or "GEOLIB", should be WMM on MAC
-    G4String MAGNETIC_FIELD_MODEL_FOR_GEOLIB = "IGRF"; // "WMM" or "IGRF" or "EMM"
+    G4String MAGNETIC_FIELD_MODEL_FOR_GEOLIB = "IGRF"; // "WMM" or "IGRF" or "EMM", used only when MAGNETIC_FIELD_MODEL == "GEOLIB"
     // WARNING : EMM is about 1000 times slower.
 
     double dr_over_R = 0.05; // stepping parameter for ionization, default is 0.2, that may be too high
