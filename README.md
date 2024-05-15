@@ -31,6 +31,7 @@ Most of settings can be adjusted in `src/Settings.cc`. In particular:
 - `Settings::TILT_ANGLE` = TGF tilt angle in degrees. Default is 0 degrees.
 - `Settings::BEAMING_TYPE` = TGF beaming type, that is a string that values "Uniform" or "Gaussian" for isotropic (within half cone angle) or gaussian distribution.
 - `Settings::SOURCE_SIGMA_TIME` = TGF sigma time. Assumes the TGF has an intrinsic duration, that has Gaussian (=normal) distribution. The parameter is the sigma of this distribution, in microseconds. Default is 0.
+- `Settings->SPECTRUM_MODEL` = 0 for classical RREA (1/E*exp(-E/7300keV)), 1 for Bowers 2018 reverse positron beam TGF, 2 for leader Celestion 2015 60 MV, 3 for leader Celestion 2015 160 MV
 ### Other settings:
 - Two modes are possible: `visualization` and `run`. `visualization` will show the 3D geometry (simplified Earth) and particle track. `run` will not show any 3D visualization, to run the code as quickly as possible. By default, the mode is set to `visu` if no input argument for the executable is specified and `run` otherwise. This can be changed by editing the `G4String` variable `Mode` in the main function located in the source file `src/tgf_propa.cc`, that can be set to `"visu"` or `"run"`. Default mode is `visu`.
 - Primary Generator is a point source, with adjustable altitude and geometry. See `src/src/PrimaryGeneratorAction.hh` and `src/src/PrimaryGeneratorAction.cc`
@@ -48,8 +49,9 @@ Most of settings can be adjusted in `src/Settings.cc`. In particular:
 - `Settings::TILT_ANGLE` = TGF tilt angle in degrees
 - `Settings::BEAMING_TYPE` = TGF beaming type, that is a string that values `"Uniform"` or `"Gaussian"` for isotropic or gaussian distribution
 - `Settings::record_altitude` = record altitude (in km) of the TGF (and secondary electron and positrons), default is 408 km.
+- `Settings::SPECTRUM_MODEL` = 0, 1, 2 or 3 (see above)
 
-- Example run command with valid input parameters (Linux) : `./TGF_Propa 10000000 15 20 -130 0 10 0 Gaussian 408`
+- Example run command with valid input parameters (Linux) : `./TGF_Propa 10000000 15 20 -130 0 10 0 Gaussian 408 0`
 
 ## Program output:
 - Recorded particles are outputed as a list (one by one, line by line) in files located in the `build/output_ascii/`. See `build/README_output.txt` to find which quantity is in which column. The same electron/positron can be recorded several time since it may cross several times the limit altitude (it is the same particle if it has the same random seed and the same ID).

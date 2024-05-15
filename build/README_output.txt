@@ -22,3 +22,4 @@ Each output file contains a list of recorded particles with the following column
 	- a number that is 0 if the Beaming (i.e. angular distribution) is Uniform and 1 if it is Gaussian
 	- settings->SOURCE_LAT (deg)
 	- settings->SOURCE_LONG (deg)
+	- Settings->SPECTRUM_MODEL (Energy spectrum function used: 0 for classical RREA, 1 for Bowers 2018 reverse positron beam TGF, 2 for leader Celestion 2015 60 MV, 3 for leader Celestion 2015 160 MV)
