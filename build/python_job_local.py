@@ -34,7 +34,7 @@ BEAMING_TYPE = 'Gaussian'
 RECORD_ALTITUDE = 408
 
 SPECTRUM_MODEL = 0
-# 0 for classical RREA 1/Exp(-E/7300)
+# 0 for classical RREA 1/E * Exp(-E/7300)
 # 1 for Bowers 2018 reverse positron beam TGF
 # 2 for leader Celestin 2015, 60 MV
 # 3 for leader Celestin 2015, 160 MV
