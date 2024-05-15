@@ -59,13 +59,13 @@ Analysis::Analysis()
     ///
 
     const G4String settings_string = std::to_string(int(RECORD_ALT)) + "_" +
-                               std::to_string(int(Settings::SOURCE_ALT)) + "_" +
-                               std::to_string(int(Settings::SOURCE_LAT)) + "_" +
-                               std::to_string(int(Settings::SOURCE_LONG)) + "_" +
-                               std::to_string(int(Settings::SOURCE_OPENING_ANGLE)) + "_" +
-                               std::to_string(number_beaming) + "_" +
-                               std::to_string(Settings::SPECTRUM_MODEL) + "_" +
-                               std::to_string(int(Settings::SOURCE_SIGMA_TIME));
+                                     std::to_string(int(Settings::SOURCE_ALT)) + "_" +
+                                     std::to_string(int(Settings::SOURCE_LAT)) + "_" +
+                                     std::to_string(int(Settings::SOURCE_LONG)) + "_" +
+                                     std::to_string(number_beaming) + "_" +
+                                     std::to_string(int(Settings::SOURCE_OPENING_ANGLE)) + "_" +
+                                     std::to_string(Settings::SPECTRUM_MODEL) + "_" +
+                                     std::to_string(int(Settings::SOURCE_SIGMA_TIME));
 
     const G4String output_filename_second_part =
         std::to_string(Settings::RAND_SEED) + "_" + settings_string + ".out";
