@@ -48,7 +48,7 @@ Most of settings can be adjusted in `src/Settings.cc`. In particular:
 - `Settings::SOURCE_OPENING_ANGLE` = half-cone TGF opening angle in degrees. If "Gaussian" is selected for `Settings::BEAMING_TYPE`, it is the sigma of the gaussian distribution.
 - `Settings::TILT_ANGLE` = TGF tilt angle in degrees
 - `Settings::BEAMING_TYPE` = TGF beaming type, that is a string that values `"Uniform"` or `"Gaussian"` for isotropic or gaussian distribution
-- `Settings::record_altitude` = record altitude (in km) of the TGF (and secondary electron and positrons), default is 408 km.
+- `Settings::record_altitude` = record altitude (in km) of the TGF (and secondary electron and positrons).
 - `Settings::SPECTRUM_MODEL` = 0, 1, 2 or 3 (see above)
 
 - Example run command with valid input parameters (Linux) : `./TGF_Propa 10000000 15 20 -130 0 10 0 Gaussian 408 0`
