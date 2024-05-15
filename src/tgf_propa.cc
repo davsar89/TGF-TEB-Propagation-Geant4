@@ -130,19 +130,19 @@ int main(int argc, char **argv)
     }
     else if (Settings::SPECTRUM_MODEL == 1)
     {
-        G4cout << "Using Energy Spectrum model: Bowers 2018 reverse positron beam TGF" << G4endl;
+        G4cout << "Using Energy Spectrum model: Bowers_2018 reverse positron beam TGF" << G4endl;
     }
     else if (Settings::SPECTRUM_MODEL == 2)
     {
-        G4cout << "Using Energy Spectrum model: Celestin 2015 leader 60 MV" << G4endl;
+        G4cout << "Using Energy Spectrum model: Celestin_2015 leader 60 MV" << G4endl;
     }
     else if (Settings::SPECTRUM_MODEL == 3)
     {
-        G4cout << "Using Energy Spectrum model: Celestin 2015 leader 160 MV" << G4endl;
+        G4cout << "Using Energy Spectrum model: Celestin_2015 leader 160 MV" << G4endl;
     }
     else
     {
-        G4cout << "Invalid SPECTRUM_MODEL value (should be 0,1,2 or 3)" << G4endl;
+        G4cout << "Invalid SPECTRUM_MODEL value (should be 0, 1, 2 or 3)" << G4endl;
         std::abort();
     }
     G4cout << "" << G4endl;
