@@ -122,12 +122,12 @@ int main(int argc, char **argv)
 
     // Initialize G4 kernel
     runManager->Initialize();
-    
+
     G4cout << "Initialization OK" << G4endl << G4endl;
 
     if (Settings::SPECTRUM_MODEL == 0)
     {
-        G4cout << "Using Energy Spectrum model: classical fully developped RREA (=1/E*Exp(-E/7300))" << G4endl;
+        G4cout << "Using Energy Spectrum model: classical fully developped RREA (=1/E*Exp(-E/7300keV))" << G4endl;
     }
     else if (Settings::SPECTRUM_MODEL == 1)
     {
