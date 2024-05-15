@@ -58,7 +58,7 @@ Analysis::Analysis()
 
     ///
 
-    G4String settings_string = std::to_string(int(RECORD_ALT)) + "_" +
+    const G4String settings_string = std::to_string(int(RECORD_ALT)) + "_" +
                                std::to_string(int(Settings::SOURCE_ALT)) + "_" +
                                std::to_string(int(Settings::SOURCE_LAT)) + "_" +
                                std::to_string(int(Settings::SOURCE_LONG)) + "_" +
