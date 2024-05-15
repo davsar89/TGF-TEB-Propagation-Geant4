@@ -122,6 +122,7 @@ int main(int argc, char **argv)
 
     // Initialize G4 kernel
     runManager->Initialize();
+    
     G4cout << "Initialization OK" << G4endl << G4endl;
 
     if (Settings::SPECTRUM_MODEL == 0)
