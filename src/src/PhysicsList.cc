@@ -111,6 +111,18 @@ void TGF_PhysicsList::SetCuts() {
 
 //    G4double lowlimit = Settings::MIN_ENERGY_OUTPUT;
     G4ProductionCutsTable *aPCTable = G4ProductionCutsTable::GetProductionCutsTable();
-    aPCTable->SetEnergyRange(10.0 * keV, 100 * CLHEP::GeV);
+    aPCTable->SetEnergyRange(10.0 * keV, 1 * CLHEP::GeV);
+
+    // Create or retrieve the region
+    G4String regionName = "RECORD_REGION";
+    G4Region* region = G4RegionStore::GetInstance()->FindOrCreateRegion(regionName);
+    // Create production cuts for the region
+    G4ProductionCuts* cuts = new G4ProductionCuts();
+    cuts->SetProductionCut(defaultCutValue, "gamma");     
+    cuts->SetProductionCut(defaultCutValue, "e-");        
+    cuts->SetProductionCut(defaultCutValue, "e+");        
+    cuts->SetProductionCut(defaultCutValue, "proton");    
+    // Assign the production cuts to the region
+    region->SetProductionCuts(cuts);
 
 }

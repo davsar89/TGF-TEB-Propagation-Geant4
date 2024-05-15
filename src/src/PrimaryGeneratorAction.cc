@@ -47,6 +47,15 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
     fParticleGun->SetParticleDefinition(particle);
 
     earth = new GeographicLib::Geocentric(GeographicLib::Constants::WGS84_a(), GeographicLib::Constants::WGS84_f());
+
+    Celestin_60MV_data = loadCSV("Celestin_60MV.csv");
+    Celestin_160MV_data = loadCSV("Celestin_160MV.csv");
+
+    normalize(Celestin_60MV_data);
+    normalize(Celestin_160MV_data);
+
+    max_60MV = computeMaxY(Celestin_60MV_data);
+    max_160MV = computeMaxY(Celestin_60MV_data);
 }
 
 // ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -62,14 +71,37 @@ PrimaryGeneratorAction::~PrimaryGeneratorAction()
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
 {
     // this function is called at the begining of event
-    // 1/E
-    //     G4double energy=MinEner*(pow(((MaxEner)/(MinEner)),G4UniformRand()))
+    // for 1/E spectrum: G4double energy=MinEner*(pow(((MaxEner)/(MinEner)),G4UniformRand()))
+
     ////////////// ENERGY /////////////////
     // 1/E * exp (-E / 7.3MeV) (rejection method)
-    G4double MaxEner = 40. * MeV;  // Max energy
-    G4double MinEner = 10. * keV;  // Min energy
-    G4double cut_ener = 7.3 * MeV; // exponential cut-off factor
-    G4double energy = Sample_one_RREA_gammaray_energy(MinEner, MaxEner, cut_ener);
+    double MaxEner = 60. * CLHEP::MeV;  // Max energy
+    double MinEner = 300. * CLHEP::keV; // Min energy
+    double energy = 0;
+
+    if (Settings::SPECTRUM_MODEL == 0)
+    {
+        double cut_ener = 7.3 * MeV; // exponential cut-off factor
+        energy = Sample_one_RREA_gammaray_energy(MinEner, MaxEner, cut_ener);
+    }
+    else if (Settings::SPECTRUM_MODEL == 1)
+    {
+        energy = Sample_one_BowersFormula_gammaray_energy(MinEner, MaxEner);
+    }
+    else if (Settings::SPECTRUM_MODEL == 2)
+    {
+        energy = rejectionSampling(Celestin_60MV_data, max_60MV) * CLHEP::electronvolt;
+    }
+    else if (Settings::SPECTRUM_MODEL == 3)
+    {
+        energy = rejectionSampling(Celestin_160MV_data, max_160MV) * CLHEP::electronvolt;
+    }
+    else
+    {
+        G4cout << "Invalid SPECTRUM_MODEL value (should be 0,1,2 or 3)" << G4endl;
+        std::abort();
+    }
+
     ////////////// POSITION / ANGLE /////////////////
     // ! : sampling theta uniformly between 0 and SOURCE_OPENING_ANGLE*degree does not sample uniformly over the area
     //  G4double theta = G4UniformRand()*shared_var::SOURCE_OPENING_ANGLE*degree;
@@ -273,3 +305,122 @@ double PrimaryGeneratorAction::Sample_one_BowersFormula_gammaray_energy(const do
 
     return eRand;
 }
+
+// ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+std::vector<DataPoint> PrimaryGeneratorAction::loadCSV(const std::string &filename)
+{
+    std::vector<DataPoint> data;
+    data.reserve(60);
+    std::ifstream file(filename);
+    std::string line;
+
+    // Skip header line
+    std::getline(file, line);
+
+    // Read data
+    while (std::getline(file, line))
+    {
+        std::stringstream ss(line);
+        std::string xStr, yStr;
+        std::getline(ss, xStr, ',');
+        std::getline(ss, yStr, ',');
+
+        // Check if the strings are not empty
+        if (!xStr.empty() && !yStr.empty())
+        {
+            try
+            {
+                DataPoint point = {std::stod(xStr), std::stod(yStr)};
+                data.push_back(point);
+            }
+            catch (const std::invalid_argument &e)
+            {
+                // Handle the case where conversion to double fails
+                // You can log this error or ignore this line
+            }
+        }
+    }
+
+    return data;
+}
+
+// ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void PrimaryGeneratorAction::normalize(std::vector<DataPoint> &data)
+{
+    double sum = 0.0;
+    for (const auto &point : data)
+    {
+        sum += point.y;
+    }
+    for (auto &point : data)
+    {
+        point.y /= sum;
+    }
+}
+
+double PrimaryGeneratorAction::logLogInterpolate(const std::vector<DataPoint> &data, const double x)
+{
+    // Use lower_bound to find the first element in data where p.x >= x
+    auto it = std::lower_bound(data.begin(), data.end(), x, [](const DataPoint &p, double val)
+                               { return p.x < val; });
+
+    // Check if the iterator is at the beginning or end of the vector
+    if (it == data.end() || it == data.begin())
+    {
+        throw std::out_of_range("Interpolation x value out of range");
+    }
+
+    // Get the previous iterator (it - 1) and current iterator (it)
+    auto it1 = it - 1;
+    auto it2 = it;
+
+    // Calculate the logarithms of the x and y values for interpolation
+    double x1 = std::log(it1->x);
+    double y1 = std::log(it1->y);
+    double x2 = std::log(it2->x);
+    double y2 = std::log(it2->y);
+
+    // Perform the linear interpolation in log-log space
+    double y = y1 + (y2 - y1) * (std::log(x) - x1) / (x2 - x1);
+
+    // Return the exponentiated result to convert back from log space
+    return std::exp(y);
+}
+
+double PrimaryGeneratorAction::computeMaxY(const std::vector<DataPoint> &data)
+{
+    double maxY = 0.0;
+    for (const auto &point : data)
+    {
+        if (point.y > maxY)
+        {
+            maxY = point.y;
+        }
+    }
+    return maxY;
+}
+
+double PrimaryGeneratorAction::rejectionSampling(const std::vector<DataPoint> &data, const double maxY)
+{
+    while (true)
+    {
+        // Generate a random x value within the range of the data set
+        double x = data.front().x + (data.back().x - data.front().x) * G4UniformRand();
+
+        // Generate a random y value between 0 and maxY
+        double y = maxY * G4UniformRand();
+
+        // Interpolate the y value for the generated x using log-log interpolation
+        double interpolatedY = logLogInterpolate(data, x);
+
+        // Accept the sample if the generated y is less than the interpolated y
+        if (y < interpolatedY)
+        {
+            return x;
+        }
+    }
+}
+
+// ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

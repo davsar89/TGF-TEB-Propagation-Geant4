@@ -106,7 +106,7 @@ int main(int argc, char **argv)
 
     Settings::RAND_SEED = seeds[0];
 
-    Analysis& analysis = Analysis::getInstance();
+    Analysis &analysis = Analysis::getInstance();
 
     auto *runManager = new G4RunManager;
 
@@ -121,7 +121,30 @@ int main(int argc, char **argv)
 
     // Initialize G4 kernel
     runManager->Initialize();
-    G4cout << G4endl << "Initialization OK" << G4endl;
+    G4cout << "Initialization OK" << G4endl << G4endl;
+
+    if (Settings::SPECTRUM_MODEL == 0)
+    {
+        G4cout << "Using Energy Spectrum model: classical fully developped RREA (=1/E*Exp(-E/7300))" << G4endl;
+    }
+    else if (Settings::SPECTRUM_MODEL == 1)
+    {
+        G4cout << "Using Energy Spectrum model: Bowers 2018 reverse positron beam TGF" << G4endl;
+    }
+    else if (Settings::SPECTRUM_MODEL == 2)
+    {
+        G4cout << "Using Energy Spectrum model: Celestin 2015 leader 60 MV" << G4endl;
+    }
+    else if (Settings::SPECTRUM_MODEL == 3)
+    {
+        G4cout << "Using Energy Spectrum model: Celestin 2015 leader 160 MV" << G4endl;
+    }
+    else
+    {
+        G4cout << "Invalid SPECTRUM_MODEL value (should be 0,1,2 or 3)" << G4endl;
+        std::abort();
+    }
+    G4cout << "" << G4endl;
 
     // get the pointer to the User Interface manager
     G4UImanager *UImanager = G4UImanager::GetUIpointer();

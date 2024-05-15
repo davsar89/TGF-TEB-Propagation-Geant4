@@ -31,7 +31,6 @@
 
 #include "G4SystemOfUnits.hh"
 #include "G4VUserPhysicsList.hh"
-#include "Settings.hh"
 //#include "G4EmStandardPhysics_option4.hh"
 #include "G4EmStandardPhysics_option4_dr.hh"
 #include "G4EmStandardPhysics_option1_dr.hh"
@@ -39,16 +38,17 @@
 #include "G4StepLimiterPhysics.hh"
 #include "G4StepLimiter.hh"
 #include "G4StepLimiterPhysics.hh"
-
 #include "G4ParticleDefinition.hh"
 #include "G4ProcessManager.hh"
-
 #include "G4StepLimiter.hh"
 #include "G4UserSpecialCuts.hh"
 #include "G4BuilderType.hh"
-
-// factory
+#include "G4Region.hh"
+#include "G4RegionStore.hh"
+#include "G4ProductionCuts.hh"
 #include "G4PhysicsConstructorFactory.hh"
+
+#include "Settings.hh"
 
 class G4VPhysicsConstructor;
 

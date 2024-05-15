@@ -6,6 +6,13 @@ namespace Settings {
 
     int NB_EVENT_TOTAL = 1000000;
 
+    int SPECTRUM_MODEL = 1;
+    // 0 for classical RREA 1/Exp(-E/7300)
+    // 1 for Bowers 2018 reverse positron beam TGF
+    // 2 for leader Celestin 2015, 60 MV
+    // 3 for leader Celestin 2015, 160 MV
+
+
     double SOURCE_LAT = -13.1300;  // degree
     double SOURCE_LONG = 31.9300; // degree
     double SOURCE_ALT = 15.;    // km

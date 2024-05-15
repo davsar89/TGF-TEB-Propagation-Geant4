@@ -69,6 +69,10 @@
         "typeindex": "cpp",
         "typeinfo": "cpp",
         "variant": "cpp",
-        "future": "cpp"
+        "future": "cpp",
+        "*.icc": "cpp",
+        "csetjmp": "cpp",
+        "buffer": "cpp",
+        "netfwd": "cpp"
     }
 }

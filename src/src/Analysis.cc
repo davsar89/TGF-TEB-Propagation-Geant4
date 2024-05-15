@@ -34,23 +34,9 @@
 // constructor
 Analysis::Analysis()
 {
+    const std::string base_outputfolder = "./output_ascii/";
 
-    ///
-
-    const double ALT_MAX_RECORDED = Settings::record_altitude;
-
-    ///
-
-    const G4String output_filename_second_part =
-        std::to_string(Settings::RAND_SEED) + "_" +
-        std::to_string(int(ALT_MAX_RECORDED)) + "_" +
-        std::to_string(int(Settings::SOURCE_ALT)) + "_" +
-        std::to_string(int(Settings::SOURCE_OPENING_ANGLE)) + "_" +
-        Settings::BEAMING_TYPE + "_" +
-        std::to_string(int(Settings::SOURCE_SIGMA_TIME)) + ".out";
-    //
-
-    //
+    const double RECORD_ALT = Settings::record_altitude;
 
     if ((Settings::BEAMING_TYPE == "Uniform") ||
         (Settings::BEAMING_TYPE == "uniform"))
@@ -64,20 +50,30 @@ Analysis::Analysis()
     {
         number_beaming = 1;
     }
+    else
+    {
+        G4cout << "Invalid BEAMING_TYPE setting. Aborting." << G4endl;
+        std::abort();
+    }
 
     ///
 
-    const std::string base_outputfolder = "./output_ascii/";
+    G4String settings_string = std::to_string(int(RECORD_ALT)) + "_" +
+                               std::to_string(int(Settings::SOURCE_ALT)) + "_" +
+                               std::to_string(int(Settings::SOURCE_LAT)) + "_" +
+                               std::to_string(int(Settings::SOURCE_LONG)) + "_" +
+                               std::to_string(int(Settings::SOURCE_OPENING_ANGLE)) + "_" +
+                               std::to_string(number_beaming) + "_" +
+                               std::to_string(Settings::SPECTRUM_MODEL) + "_" +
+                               std::to_string(int(Settings::SOURCE_SIGMA_TIME));
+
+    const G4String output_filename_second_part =
+        std::to_string(Settings::RAND_SEED) + "_" + settings_string + ".out";
+    //
 
     createDirectory(base_outputfolder);
 
-    std::string output_folder_name = base_outputfolder + std::to_string(int(ALT_MAX_RECORDED)) + "_" +
-                                     std::to_string(int(Settings::SOURCE_ALT)) + "_" +
-                                     std::to_string(int(Settings::SOURCE_OPENING_ANGLE)) + "_" +
-                                     Settings::BEAMING_TYPE + "_" +
-                                     std::to_string(int(Settings::SOURCE_SIGMA_TIME)) + "_" +
-                                     std::to_string(int(Settings::SOURCE_LAT)) + "_" +
-                                     std::to_string(int(Settings::SOURCE_LONG)) + "/";
+    std::string output_folder_name = base_outputfolder + settings_string + "/";
 
     createDirectory(output_folder_name);
 
@@ -177,17 +173,19 @@ void Analysis::save_in_output_buffer(
             buffer << ' ';
             buffer << ecef_z;
             buffer << ' ';
-            buffer << mom_x/mom_norm;
+            buffer << mom_x / mom_norm;
             buffer << ' ';
-            buffer << mom_y/mom_norm;
+            buffer << mom_y / mom_norm;
             buffer << ' ';
-            buffer << mom_z/mom_norm;
+            buffer << mom_z / mom_norm;
             buffer << ' ';
             buffer << number_beaming; // 20 // number_beaming == 0 for uniform and 1 for // gaussian
             buffer << ' ';
             buffer << Settings::SOURCE_LAT;
             buffer << ' ';
             buffer << Settings::SOURCE_LONG;
+            buffer << ' ';
+            buffer << Settings::SPECTRUM_MODEL;
             buffer << ' ';
             buffer << G4endl;
             //

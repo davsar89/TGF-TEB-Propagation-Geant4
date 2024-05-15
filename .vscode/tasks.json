@@ -2,7 +2,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Build Project",
+            "label": "Build Project Debug",
             "type": "shell",
             "command": "cd ${workspaceFolder}/build && cmake -DCMAKE_BUILD_TYPE=Debug ../ && make -j4",
             "group": {
@@ -27,7 +27,7 @@
             "command": "cd ${workspaceFolder}/build && ./TGF_Propa",
             "group": "test",
             "problemMatcher": [],
-            "dependsOn": "Build Project"
+            "dependsOn": "Build Project Debug"
         }
     ]
 }
