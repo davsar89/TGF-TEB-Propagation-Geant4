@@ -33,9 +33,15 @@ TILT_ANGLE = 0
 BEAMING_TYPE = 'Gaussian'
 RECORD_ALTITUDE = 408
 
-# DEFINE LIST OF COMMANDS TO RUN on NB_CPU threads
+SPECTRUM_MODEL = 0
+# 0 for classical RREA 1/Exp(-E/7300)
+# 1 for Bowers 2018 reverse positron beam TGF
+# 2 for leader Celestin 2015, 60 MV
+# 3 for leader Celestin 2015, 160 MV
+
+# DEFINE LIST OF COMMANDS TO RUN ON NB_CPU THREADS
 for _ in range(nb_run):
-    commands.append(f"{excecutable} {NB} {SOURCE_ALT} {SOURCE_LAT} {SOURCE_LONG} {SOURCE_SIGMA_TIME} {SOURCE_OPENING_ANGLE} {TILT_ANGLE} {BEAMING_TYPE} {RECORD_ALTITUDE}")
+    commands.append(f"{excecutable} {NB} {SOURCE_ALT} {SOURCE_LAT} {SOURCE_LONG} {SOURCE_SIGMA_TIME} {SOURCE_OPENING_ANGLE} {TILT_ANGLE} {BEAMING_TYPE} {RECORD_ALTITUDE} {SPECTRUM_MODEL}")
 
 ################################################################################
 # LOCAL RUN (uses python multiprocessing library)

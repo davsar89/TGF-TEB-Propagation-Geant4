@@ -88,6 +88,7 @@ int main(int argc, char **argv)
         Settings::TILT_ANGLE = std::stod(argv[7]);
         Settings::BEAMING_TYPE = argv[8];
         Settings::record_altitude = std::stod(argv[9]);
+        Settings::SPECTRUM_MODEL = std::stoi(argv[10]);
     }
     else
     {
