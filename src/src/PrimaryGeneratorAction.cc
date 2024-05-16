@@ -55,7 +55,7 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
     normalize(Celestin_160MV_data);
 
     max_60MV = computeMaxY(Celestin_60MV_data);
-    max_160MV = computeMaxY(Celestin_60MV_data);
+    max_160MV = computeMaxY(Celestin_160MV_data);
 }
 
 // ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -312,33 +312,28 @@ std::vector<DataPoint> PrimaryGeneratorAction::loadCSV(const std::string &filena
 {
     std::vector<DataPoint> data;
     data.reserve(60);
+
     std::ifstream file(filename);
     std::string line;
 
     // Skip header line
     std::getline(file, line);
 
+    double value1, value2;
+    char comma; // To read and discard the comma
+
     // Read data
     while (std::getline(file, line))
     {
-        std::stringstream ss(line);
-        std::string xStr, yStr;
-        std::getline(ss, xStr, ',');
-        std::getline(ss, yStr, ',');
-
-        // Check if the strings are not empty
-        if (!xStr.empty() && !yStr.empty())
+        while (file >> value1 >> comma >> value2)
         {
-            try
+            if (comma != ',')
             {
-                DataPoint point = {std::stod(xStr), std::stod(yStr)};
-                data.push_back(point);
+                std::cerr << "Error: Malformed CSV file." << std::endl;
+                std::abort();
             }
-            catch (const std::invalid_argument &e)
-            {
-                // Handle the case where conversion to double fails
-                // You can log this error or ignore this line
-            }
+            const DataPoint point = {value1, value2 * 1.0e10};
+            data.push_back(point);
         }
     }
 

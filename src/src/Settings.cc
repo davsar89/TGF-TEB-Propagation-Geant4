@@ -6,7 +6,7 @@ namespace Settings {
 
     int NB_EVENT_TOTAL = 1000000;
 
-    int SPECTRUM_MODEL = 0;
+    int SPECTRUM_MODEL = 3;
     // 0 for classical RREA 1/E * Exp(-E/7300keV)
     // 1 for Bowers 2018 reverse positron beam TGF
     // 2 for leader Celestin 2015, 60 MV
