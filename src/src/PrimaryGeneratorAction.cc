@@ -74,8 +74,8 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
     // for 1/E spectrum: G4double energy=MinEner*(pow(((MaxEner)/(MinEner)),G4UniformRand()))
 
     ////////////// ENERGY /////////////////
-    double MaxEner = 60. * CLHEP::MeV;  // Max energy
-    double MinEner = 300. * CLHEP::keV; // Min energy
+    const double MaxEner = 60. * CLHEP::MeV;  // Max energy
+    const double MinEner = 300. * CLHEP::keV; // Min energy
     double energy = 0;
 
     if (Settings::SPECTRUM_MODEL == 0)
