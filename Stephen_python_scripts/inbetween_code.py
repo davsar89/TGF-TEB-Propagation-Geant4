@@ -47,29 +47,32 @@ class SimData:
 
 
 def read_Geant4_output(filename, particle_type):
-
-	## Open file
-	file = open(filename, 'r')
-	file_line_by_line = file.readlines()
-
-	## Collect data (line-by-line)
-	data_array = []
-	for line in file_line_by_line:
-		line_as_array = line.strip('\n').split()
-		data_array.append(line_as_array)
-	file.close()
-
-	## Transpose data (index by columns)
-	data_array = [list(i) for i in zip(*data_array)]
-
+	data = []
+	delimiter = ' '
+	with open(filename, 'r') as file:
+		for line in file:
+			# Split the line into elements, strip removes trailing newline
+			elements = line.strip().split(delimiter)
+			# Convert elements to float (or int, if needed)
+			row = [float(element) if '.' in element else int(element) for element in elements]
+			data.append(row)
+	# Convert list of lists to a 2D NumPy array
 	## Organize data in dictionary
-	data_dict = _organize_data(data_array, particle_type)
-
+	data_dict = _organize_data(np.array(data), particle_type)
 	return data_dict
+
+def remove_extreme_values(arr):
+    # Calculate the 5th and 95th percentiles
+    p5 = np.percentile(arr, 5)
+    p95 = np.percentile(arr, 95)
+    # Filter the array to include only values within the 5th and 95th percentile range
+    filtered_arr = arr[(arr >= p5) & (arr <= p95)]
+    return filtered_arr
 
 def get_separator_lat(lat_array):
 	# Sort the data
 	xx = copy.deepcopy(lat_array)
+	xx = remove_extreme_values(xx)
 	lat_sorted = np.sort(xx)
 	# Find gaps in the sorted data
 	gaps = np.diff(lat_sorted)
@@ -83,29 +86,29 @@ def _organize_data(data_array, selection):
 
 	particle_map = {'ph':22, 'e-':11, 'e+':-11}
 
-	seed = np.asarray(data_array[idx_RAND_SEED], dtype=int)            # random number seed of the run
-	src_lat = np.asarray(data_array[idx_SOURCE_LAT], dtype=float)       # deg
-	src_lon = np.asarray(data_array[idx_SOURCE_LONG], dtype=float)       # deg
-	src_alt = np.asarray(data_array[idx_SOURCE_ALT], dtype=float)       # km
-	beam_dist = np.asarray(data_array[idx_number_beaming], dtype=str)       # 1 = Gaussian | 0 = Uniform
-	beam_open = np.asarray(data_array[idx_SOURCE_OPENING_ANGLE], dtype=float)     # deg: Gaussian = sigma | Uniform = half-cone theta
-	beam_tilt = np.asarray(data_array[idx_TILT_ANGLE], dtype=float)     # deg
-	num_ph_sampled = np.asarray(data_array[idx_event_nb], dtype=int)  # number of TGF photons sampled when record is made
-	creation_type = np.asarray(data_array[idx_ID], dtype=int)   # 1 = primary | >1 = secondary
-	particle_type = np.asarray(data_array[idx_PDG_NB], dtype=int)   # 22 = ph | 11 = e- | -11 = e
-	time = np.asarray(data_array[idx_time], dtype=float)         # microsec wrt TGF photon sampling time
-	energy = np.asarray(data_array[idx_energy], dtype=float)       # keV
-	lat = np.asarray(data_array[idx_lat], dtype=float)          # deg
-	lon = np.asarray(data_array[idx_lon], dtype=float)          # deg
-	alt = np.asarray(data_array[idx_alt], dtype=float)          # km
-	dist = np.asarray(data_array[idx_dist_rad], dtype=float)         # km: distance wrt TGF source position
-	pos_x = np.asarray(data_array[idx_ecef_x], dtype=float)        # position x-coord
-	pos_y = np.asarray(data_array[idx_ecef_y], dtype=float)        # position y-coord
-	pos_z = np.asarray(data_array[idx_ecef_z], dtype=float)        # position z-coord
-	mom_x = np.asarray(data_array[idx_mom_x], dtype=float)        # momentum x-coord
-	mom_y = np.asarray(data_array[idx_mom_y], dtype=float)        # momentum y-coord
-	mom_z = np.asarray(data_array[idx_mom_z], dtype=float)        # momentum z-coord
-	s_model = np.asarray(data_array[idx_spectrum_model], dtype=float)        # momentum z-coord
+	seed = np.asarray(data_array[:,idx_RAND_SEED], dtype=int)            # random number seed of the run
+	src_lat = np.asarray(data_array[:,idx_SOURCE_LAT], dtype=float)       # deg
+	src_lon = np.asarray(data_array[:,idx_SOURCE_LONG], dtype=float)       # deg
+	src_alt = np.asarray(data_array[:,idx_SOURCE_ALT], dtype=float)       # km
+	beam_dist = np.asarray(data_array[:,idx_number_beaming], dtype=str)       # 1 = Gaussian | 0 = Uniform
+	beam_open = np.asarray(data_array[:,idx_SOURCE_OPENING_ANGLE], dtype=float)     # deg: Gaussian = sigma | Uniform = half-cone theta
+	beam_tilt = np.asarray(data_array[:,idx_TILT_ANGLE], dtype=float)     # deg
+	num_ph_sampled = np.asarray(data_array[:,idx_event_nb], dtype=int)  # number of TGF photons sampled when record is made
+	creation_type = np.asarray(data_array[:,idx_ID], dtype=int)   # 1 = primary | >1 = secondary
+	particle_type = np.asarray(data_array[:,idx_PDG_NB], dtype=int)   # 22 = ph | 11 = e- | -11 = e
+	time = np.asarray(data_array[:,idx_time], dtype=float)         # microsec wrt TGF photon sampling time
+	energy = np.asarray(data_array[:,idx_energy], dtype=float)       # keV
+	lat = np.asarray(data_array[:,idx_lat], dtype=float)          # deg
+	lon = np.asarray(data_array[:,idx_lon], dtype=float)          # deg
+	alt = np.asarray(data_array[:,idx_alt], dtype=float)          # km
+	dist = np.asarray(data_array[:,idx_dist_rad], dtype=float)         # km: distance wrt TGF source position
+	pos_x = np.asarray(data_array[:,idx_ecef_x], dtype=float)        # position x-coord
+	pos_y = np.asarray(data_array[:,idx_ecef_y], dtype=float)        # position y-coord
+	pos_z = np.asarray(data_array[:,idx_ecef_z], dtype=float)        # position z-coord
+	mom_x = np.asarray(data_array[:,idx_mom_x], dtype=float)        # momentum x-coord
+	mom_y = np.asarray(data_array[:,idx_mom_y], dtype=float)        # momentum y-coord
+	mom_z = np.asarray(data_array[:,idx_mom_z], dtype=float)        # momentum z-coord
+	s_model = np.asarray(data_array[:,idx_spectrum_model], dtype=int)        # momentum z-coord
 
 	beam_dist[beam_dist=='0'] = 'uniform'
 	beam_dist[beam_dist=='1'] = 'gaussian'
