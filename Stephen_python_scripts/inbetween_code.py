@@ -61,6 +61,33 @@ def read_Geant4_output(filename, particle_type):
 	data_dict = _organize_data(np.array(data), particle_type)
 	return data_dict
 
+def has_problematic_values(arr):
+    """
+    Checks for problematic values in a NumPy array including NaN, Inf, -Inf,
+    and extreme values due to data type limits.
+
+    Parameters:
+    arr (np.ndarray): The input NumPy array.
+
+    Returns:
+    bool: True if any problematic values are found, False otherwise.
+    """
+    # Check for NaN and any kind of infinity
+    if np.isnan(arr).any() or np.isinf(arr).any():
+        return True
+
+    # Check for extreme values specific to data type limits
+    if arr.dtype.kind in 'iu':  # Integer types (signed and unsigned)
+        max_val, min_val = np.iinfo(arr.dtype).max, np.iinfo(arr.dtype).min
+        if np.any(arr <= min_val) or np.any(arr >= max_val):
+            return True
+    elif arr.dtype.kind == 'f':  # Floating-point types
+        max_val, min_val = np.finfo(arr.dtype).max, np.finfo(arr.dtype).min
+        if np.any(arr <= -max_val) or np.any(arr >= max_val):
+            return True
+
+    return False
+
 def remove_extreme_values(arr):
     # Calculate the 5th and 95th percentiles
     p5 = np.percentile(arr, 5)
@@ -83,6 +110,10 @@ def get_separator_lat(lat_array):
 	return middle_x
 
 def _organize_data(data_array, selection):
+
+	if has_problematic_values(data_array):
+		print("The read datafile contain invalid value (nan or inf, or overflow), aborting.")
+		sys.exit()
 
 	particle_map = {'ph':22, 'e-':11, 'e+':-11}
 
