@@ -206,7 +206,7 @@ def run(args):
 	write_file(posi_ener_mom_filename, posi_ener_mom_str)
 
 	if data.posi['energy'].size==0:
-		posi_ener_mom_str_null = '{:.5e} {:.5e} {:.5e} {:.5e}'.format(0.0,0.0,0.0,0.0)
+		posi_ener_mom_str_null = '{:.5e} {:.5e} {:.5e} {:.5e}'.format(0.0, 0.0, 0.0, 0.0)
 		write_file(posi_ener_mom_filename, posi_ener_mom_str_null)
 
 	## spectra ##
