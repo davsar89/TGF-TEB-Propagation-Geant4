@@ -85,6 +85,8 @@ Analysis::Analysis()
     asciiFile.close();
 
     output_lines.clear();
+
+    G4cout << "Analysis singleton initialized." << G4endl;
 }
 
 // ....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -237,7 +239,7 @@ void Analysis::write_in_output_file_endOfRun()
 
     if (asciiFile.is_open())
     {
-        for (G4String &line : output_lines)
+        for (const G4String &line : output_lines)
         {
             asciiFile << line;
         }

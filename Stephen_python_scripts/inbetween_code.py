@@ -37,6 +37,7 @@ idx_mom_z = 18
 idx_number_beaming = 19
 idx_SOURCE_LAT = 20
 idx_SOURCE_LONG = 21
+idx_spectrum_model = 22
 ##
 
 class SimData:
@@ -104,6 +105,7 @@ def _organize_data(data_array, selection):
 	mom_x = np.asarray(data_array[idx_mom_x], dtype=float)        # momentum x-coord
 	mom_y = np.asarray(data_array[idx_mom_y], dtype=float)        # momentum y-coord
 	mom_z = np.asarray(data_array[idx_mom_z], dtype=float)        # momentum z-coord
+	s_model = np.asarray(data_array[idx_spectrum_model], dtype=float)        # momentum z-coord
 
 	beam_dist[beam_dist=='0'] = 'uniform'
 	beam_dist[beam_dist=='1'] = 'gaussian'
@@ -143,6 +145,7 @@ def _organize_data(data_array, selection):
 	data_dict['mom_x'] = mom_x[kept_indices]
 	data_dict['mom_y'] = mom_y[kept_indices]
 	data_dict['mom_z'] = mom_z[kept_indices]
+	data_dict['s_model'] = s_model[kept_indices]
 
 	return data_dict
 
@@ -183,7 +186,10 @@ def run(args):
 
 	## electron-positron ratio ##
 
-	ep_r = len(data.posi['particle_type']) / (len(data.elec['particle_type']) + len(data.posi['particle_type']))
+	if len(data.posi['particle_type'])==0:
+		ep_r = 0.0
+	else:
+		ep_r = len(data.posi['particle_type']) / (len(data.elec['particle_type']) + len(data.posi['particle_type']))
 	elec_posi_ratio = "{:.5e}".format(ep_r)
 	write_file(elec_posi_ratio_filename, elec_posi_ratio)
 
@@ -198,6 +204,10 @@ def run(args):
 	for i in range(data.posi['energy'].size):
 		posi_ener_mom_str += '{:.5e} {:.5e} {:.5e} {:.5e}\n'.format(data.posi['energy'][i], data.posi['mom_x'][i], data.posi['mom_y'][i], data.posi['mom_z'][i])
 	write_file(posi_ener_mom_filename, posi_ener_mom_str)
+
+	if data.posi['energy'].size==0:
+		posi_ener_mom_str_null = '{:.5e} {:.5e} {:.5e} {:.5e}'.format(0.0,0.0,0.0,0.0)
+		write_file(posi_ener_mom_filename, posi_ener_mom_str_null)
 
 	## spectra ##
 
@@ -218,7 +228,10 @@ def run(args):
 	if not args.ignore_photons:
 		ph_pdf = ph_hist / (sum(ph_hist) * bin_widths)
 	elec_pdf = elec_hist / (sum(elec_hist) * bin_widths)
-	posi_pdf = posi_hist / (sum(posi_hist) * bin_widths)
+	if data.posi['energy'].size != 0:
+		posi_pdf = posi_hist / (sum(posi_hist) * bin_widths)
+	else:
+		posi_pdf = np.zeros(posi_hist.size)
 
 	if not args.ignore_photons:
 		ph_ener_spec_str = '{:.5e} {:.5e}\n'.format(energy_bins[0], 0)
